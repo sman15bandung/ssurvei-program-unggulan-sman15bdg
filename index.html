@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Survei Program Unggulan Sekolah</title>
+  <style>
+    :root{
+      --blue-dark:#1e3a8a;
+      --blue:#2563eb;
+      --blue-light:#60a5fa;
+      --bg-soft:#eef4ff;
+      --card-bg:#ffffff;
+      --text-dark:#1e293b;
+      --text-muted:#64748b;
+      --green:#16a34a;
+      --red:#dc2626;
+      --radius:18px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:'Segoe UI', Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#dbeafe 0%,#f4f8ff 220px,#f4f8ff 100%);
+      color:var(--text-dark);
+      padding-bottom:40px;
+    }
+    .header{
+      background:linear-gradient(135deg,#1e40af 0%,#3b82f6 55%,#60a5fa 100%);
+      color:#fff;
+      padding:36px 24px 44px;
+      text-align:center;
+      border-radius:0 0 32px 32px;
+      position:relative;
+      overflow:hidden;
+    }
+    .header .icon{
+      font-size:38px;
+      margin-bottom:6px;
+      cursor:default;
+      user-select:none;
+      display:inline-block;
+    }
+    .header h1{
+      margin:4px 0 8px;
+      font-size:26px;
+      letter-spacing:0.5px;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+    .header p{
+      margin:0 auto;
+      max-width:480px;
+      font-size:14px;
+      opacity:0.92;
+      line-height:1.5;
+    }
+    .divider{
+      margin:16px auto 0;
+      width:60px;
+      height:3px;
+      background:#fbbf24;
+      border-radius:3px;
+    }
+    .container{
+      max-width:560px;
+      margin:-24px auto 0;
+      padding:0 18px;
+    }
+    .container.wide{max-width:680px;}
+    .card{
+      background:var(--card-bg);
+      border-radius:var(--radius);
+      box-shadow:0 6px 20px rgba(30,64,175,0.08);
+      padding:24px 22px;
+      margin-bottom:18px;
+      border:1px solid #eef2f7;
+    }
+    .card-title{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .badge{
+      width:34px;height:34px;
+      border-radius:50%;
+      background:var(--blue);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;
+      font-size:15px;
+      flex-shrink:0;
+    }
+    .card-title h2{
+      font-size:17px;
+      margin:0;
+      color:var(--blue-dark);
+      font-weight:700;
+    }
+    label{
+      display:block;
+      font-size:14px;
+      font-weight:600;
+      margin:14px 0 6px;
+      color:var(--text-dark);
+    }
+    select, input[type=text], input[type=password], textarea{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1.5px solid #dbe4f3;
+      font-size:14px;
+      background:#f8fafc;
+      color:var(--text-dark);
+      appearance:none;
+      -webkit-appearance:none;
+      font-family:inherit;
+    }
+    textarea{resize:vertical;min-height:110px;line-height:1.6;}
+    select:focus, input:focus, textarea:focus{
+      outline:none;
+      border-color:var(--blue);
+      background:#fff;
+    }
+    select:disabled{
+      background:#f1f5f9;
+      color:#94a3b8;
+    }
+    .select-wrap{position:relative;}
+    .select-wrap::after{
+      content:"▾";
+      position:absolute;
+      right:14px; top:50%;
+      transform:translateY(-40%);
+      color:var(--text-muted);
+      pointer-events:none;
+    }
+    .btn{
+      width:100%;
+      margin-top:22px;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      transition:opacity .15s;
+    }
+    .btn:disabled{
+      background:#c9d5e8;
+      cursor:not-allowed;
+    }
+    .btn:not(:disabled):hover{opacity:0.92;}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);}
+    .btn-ghost{background:#eef2f7;color:var(--text-dark);margin-top:0;width:auto;}
+    .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:9px;margin-top:0;width:auto;}
+    .hint{
+      font-size:12.5px;
+      color:var(--text-muted);
+      margin-top:10px;
+      text-align:center;
+      line-height:1.5;
+    }
+    .footer-note{
+      text-align:center;
+      color:var(--text-muted);
+      font-size:13px;
+      margin-top:24px;
+      line-height:1.6;
+    }
+    .footer-note b{color:var(--blue-dark);}
+
+    .placeholder{
+      text-align:center;
+      padding:30px 10px;
+    }
+    .placeholder .emoji{font-size:40px;margin-bottom:10px;}
+    .placeholder h3{margin:0 0 8px;color:var(--blue-dark);font-size:16px;}
+    .placeholder p{color:var(--text-muted);font-size:13.5px;margin:0;}
+    .identity-summary{
+      background:var(--bg-soft);
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:13.5px;
+      margin-top:16px;
+      color:var(--blue-dark);
+    }
+    .toast{
+      position:fixed;
+      bottom:24px;left:50%;
+      transform:translateX(-50%);
+      background:#1e293b;
+      color:#fff;
+      padding:12px 20px;
+      border-radius:10px;
+      font-size:13.5px;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s;
+      z-index:60;
+      max-width:90vw;
+      text-align:center;
+    }
+    .toast.show{opacity:1;}
+    .toast.error{background:var(--red);}
+    .toast.success{background:var(--green);}
+    .hidden{display:none !important;}
+
+    /* ---- Admin-only styles ---- */
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media (max-width:480px){.row2{grid-template-columns:1fr;}}
+    .btn-full{width:100%;}
+    .filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+    .filter-bar select{flex:1;min-width:140px;}
+    .filter-bar input{flex:2;min-width:160px;}
+    .stat-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+    .stat{background:var(--bg-soft);border-radius:12px;padding:10px 14px;flex:1;min-width:110px;text-align:center;}
+    .stat b{display:block;font-size:20px;color:var(--blue-dark);}
+    .stat span{font-size:11.5px;color:var(--text-muted);}
+    table{width:100%;border-collapse:collapse;font-size:13.5px;}
+    thead th{
+      text-align:left;padding:9px 10px;color:var(--text-muted);font-weight:600;
+      border-bottom:2px solid #eef2f7;font-size:12px;text-transform:uppercase;letter-spacing:.3px;
+    }
+    tbody td{padding:10px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+    tbody tr:hover{background:#f8fafc;}
+    .kelas-tag{
+      display:inline-block;background:var(--bg-soft);color:var(--blue-dark);
+      padding:3px 9px;border-radius:8px;font-size:12px;font-weight:700;
+    }
+    .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+    .edit-input{padding:7px 9px;font-size:13px;border-radius:8px;}
+    .empty-state{text-align:center;padding:34px 10px;color:var(--text-muted);}
+    .empty-state .emoji{font-size:34px;margin-bottom:8px;}
+    .empty-state p{margin:0;font-size:13.5px;}
+    .tabs{display:flex;gap:8px;margin-bottom:16px;}
+    .tab-btn{
+      flex:1;padding:10px;border-radius:12px;border:1.5px solid #dbe4f3;background:#f8fafc;
+      font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;
+    }
+    .tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+    .admin-back{
+      display:inline-block;background:none;border:none;color:#dbeafe;
+      font-size:13px;cursor:pointer;margin-bottom:6px;padding:0;text-decoration:underline;
+    }
+
+    /* ---- PIN modal ---- */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(15,23,42,0.55);
+      display:flex;align-items:center;justify-content:center;
+      z-index:100;padding:20px;
+    }
+    .modal-box{
+      background:#fff;border-radius:18px;padding:26px 24px;max-width:320px;width:100%;
+      text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.25);
+    }
+    .modal-box .emoji{font-size:32px;margin-bottom:8px;}
+    .modal-box h3{margin:0 0 6px;font-size:16px;color:var(--blue-dark);}
+    .modal-box p{margin:0 0 14px;font-size:13px;color:var(--text-muted);}
+    .modal-box input{text-align:center;letter-spacing:3px;font-size:16px;}
+    .modal-actions{display:flex;gap:8px;margin-top:14px;}
+    .modal-actions .btn{margin-top:0;}
+  </style>
+</head>
+<body>
+
+  <!-- ======================= VIEW: SURVEI SISWA ======================= -->
+  <div id="view-survey">
+    <div class="header">
+      <div class="icon" id="schoolIcon" title="">🏫</div>
+      <h1>Formulir Survei<br>Program Unggulan Sekolah</h1>
+      <p>Pendapat Anda sangat berharga untuk kami dalam mengembangkan program yang lebih baik.</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="container">
+
+      <!-- HALAMAN 1: IDENTITAS -->
+      <div class="card" id="page-identitas">
+        <div class="card-title">
+          <div class="badge">1</div>
+          <h2>Identitas Peserta</h2>
+        </div>
+
+        <label for="kelas">Pilih Kelas</label>
+        <div class="select-wrap">
+          <select id="kelas">
+            <option value="">Memuat data kelas...</option>
+          </select>
+        </div>
+
+        <label for="nama">Pilih Nama</label>
+        <div class="select-wrap">
+          <select id="nama" disabled>
+            <option value="">Pilih kelas terlebih dahulu</option>
+          </select>
+        </div>
+
+        <button class="btn" id="btnLanjut" disabled>Lanjut ke Survei Program →</button>
+        <div class="hint">Data nama diambil otomatis dari data siswa yang terdaftar</div>
+      </div>
+
+      <!-- HALAMAN 2: PLACEHOLDER PROGRAM -->
+      <div class="card hidden" id="page-program">
+        <div class="card-title">
+          <div class="badge" style="background:#16a34a;">2</div>
+          <h2>Survei Program Unggulan</h2>
+        </div>
+
+        <div class="identity-summary" id="identitySummary"></div>
+
+        <div class="placeholder" id="statusSimpan">
+          <div class="emoji">⏳</div>
+          <h3>Menyimpan data...</h3>
+          <p>Mohon tunggu sebentar.</p>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Terima kasih 💙 atas waktu dan partisipasinya.<br>
+        Bersama, kita wujudkan <b>sekolah yang lebih baik!</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= VIEW: PORTAL ADMIN (tersembunyi) ======================= -->
+  <div id="view-admin" class="hidden">
+    <div class="header">
+      <button class="admin-back" id="btnBackToSurvey">← Kembali ke form survei</button>
+      <button class="admin-back" id="btnLogout" style="float:right;">Keluar</button>
+      <div class="icon">🛠️</div>
+      <h1>Portal Admin — Data Siswa</h1>
+      <p>Kelola daftar kelas dan nama siswa yang akan muncul di form survei.</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="container wide">
+
+      <div class="card">
+        <div class="card-title">
+          <div class="badge">＋</div>
+          <h2>Tambah Data Siswa</h2>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="satu">Tambah Satu</button>
+          <button class="tab-btn" data-tab="massal">Tambah Banyak Sekaligus</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-satu">
+          <div class="row2">
+            <div>
+              <label for="kelasSatu">Kelas</label>
+              <input type="text" id="kelasSatu" list="daftarKelasOpt" placeholder="mis. XII-1">
+            </div>
+            <div>
+              <label for="namaSatu">Nama Siswa</label>
+              <input type="text" id="namaSatu" placeholder="Nama lengkap">
+            </div>
+          </div>
+          <button class="btn btn-full" id="btnTambahSatu">Tambah Siswa</button>
+          <div class="hint">Kelas baru akan otomatis muncul di daftar kelas.</div>
+        </div>
+
+        <div class="tab-panel" id="tab-massal">
+          <label for="kelasMassal">Kelas untuk semua nama di bawah ini</label>
+          <input type="text" id="kelasMassal" list="daftarKelasOpt" placeholder="mis. XII-2">
+          <label for="namaMassal">Daftar Nama (satu nama per baris)</label>
+          <textarea id="namaMassal" placeholder="Contoh:&#10;Ahmad Fadhilah&#10;Nabila Fathiya&#10;Rangga Putra Armansyah"></textarea>
+          <div class="hint" id="hitungMassal">0 nama akan ditambahkan.</div>
+          <button class="btn btn-full" id="btnTambahMassal">Proses &amp; Simpan Semua</button>
+        </div>
+
+        <datalist id="daftarKelasOpt"></datalist>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="badge" style="background:var(--green);">☰</div>
+          <h2>Daftar Siswa</h2>
+        </div>
+
+        <div class="stat-row" id="statRow"></div>
+
+        <div class="filter-bar">
+          <select id="filterKelas">
+            <option value="">Semua Kelas</option>
+          </select>
+          <input type="text" id="searchNama" placeholder="Cari nama...">
+        </div>
+
+        <div id="tableWrap">
+          <div class="empty-state">
+            <div class="emoji">⏳</div>
+            <p>Memuat data...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Portal ini tersembunyi dan tanpa login — jangan bagikan cara aksesnya sembarangan.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= MODAL LOGIN ADMIN ======================= -->
+  <div class="modal-overlay hidden" id="loginModal">
+    <div class="modal-box">
+      <div class="emoji">🔒</div>
+      <h3>Akses Portal Admin</h3>
+      <p>Masuk dengan akun admin untuk melanjutkan.</p>
+      <label for="loginEmail" style="text-align:left;margin-top:0;">Email</label>
+      <input type="text" id="loginEmail" placeholder="admin@sekolah.local" autocomplete="username" style="text-align:left;letter-spacing:normal;font-size:14px;">
+      <label for="loginPassword" style="text-align:left;">Password</label>
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" style="text-align:left;letter-spacing:normal;font-size:14px;">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btnLoginCancel" style="flex:1;">Batal</button>
+        <button class="btn" id="btnLoginSubmit" style="flex:1;margin-top:0;">Masuk</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ====== KONFIGURASI SUPABASE ======
+  var SUPABASE_URL = 'https://xfsmxcwcrcjhxyobttwp.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_8GfQ7g8d4PmdDKh7H6dDsA_zKcPFcEt';
+  var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // ===================================
+
+  function showToast(msg, type){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(function(){ t.className = 'toast'; }, 2800);
+  }
+
+  /* =========================================================
+     TRIGGER TERSEMBUNYI: klik ikon 🏫 di header 5x berturut-turut
+     dalam 2 detik akan memunculkan modal PIN admin.
+     ========================================================= */
+  (function(){
+    var clickCount = 0;
+    var resetTimer = null;
+    var schoolIcon = document.getElementById('schoolIcon');
+    var loginModal = document.getElementById('loginModal');
+    var loginEmail = document.getElementById('loginEmail');
+    var loginPassword = document.getElementById('loginPassword');
+
+    schoolIcon.addEventListener('click', async function(){
+      clickCount++;
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(function(){ clickCount = 0; }, 2000);
+
+      if (clickCount >= 5){
+        clickCount = 0;
+        var sessionRes = await supabase.auth.getSession();
+        if (sessionRes.data && sessionRes.data.session){
+          // sudah login sebelumnya di browser ini -> langsung buka admin
+          openAdminView();
+        } else {
+          loginModal.classList.remove('hidden');
+          loginEmail.value = '';
+          loginPassword.value = '';
+          loginEmail.focus();
+        }
+      }
+    });
+
+    document.getElementById('btnLoginCancel').addEventListener('click', function(){
+      loginModal.classList.add('hidden');
+    });
+
+    async function trySubmitLogin(){
+      var email = loginEmail.value.trim();
+      var password = loginPassword.value;
+      if (!email || !password){
+        showToast('Isi email dan password', 'error');
+        return;
+      }
+      var btn = document.getElementById('btnLoginSubmit');
+      btn.disabled = true; btn.textContent = 'Memeriksa...';
+
+      var res = await supabase.auth.signInWithPassword({ email: email, password: password });
+
+      btn.disabled = false; btn.textContent = 'Masuk';
+      if (res.error){
+        showToast('Login gagal: ' + res.error.message, 'error');
+        return;
+      }
+      loginModal.classList.add('hidden');
+      openAdminView();
+    }
+    document.getElementById('btnLoginSubmit').addEventListener('click', trySubmitLogin);
+    loginPassword.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') trySubmitLogin();
+    });
+
+    document.getElementById('btnBackToSurvey').addEventListener('click', function(){
+      document.getElementById('view-admin').classList.add('hidden');
+      document.getElementById('view-survey').classList.remove('hidden');
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', async function(){
+      await supabase.auth.signOut();
+      document.getElementById('view-admin').classList.add('hidden');
+      document.getElementById('view-survey').classList.remove('hidden');
+      showToast('Berhasil keluar dari portal admin', 'success');
+    });
+
+    function openAdminView(){
+      document.getElementById('view-survey').classList.add('hidden');
+      document.getElementById('view-admin').classList.remove('hidden');
+      window.scrollTo({top:0});
+      initAdminOnce();
+    }
+  })();
+
+  /* =========================================================
+     VIEW SURVEI SISWA
+     ========================================================= */
+  (function(){
+    var siswaData = [];
+    var selectedNama = '';
+    var selectedKelas = '';
+    var selectedSiswaId = null;
+
+    var kelasEl = document.getElementById('kelas');
+    var namaEl = document.getElementById('nama');
+    var btnLanjut = document.getElementById('btnLanjut');
+    var pageIdentitas = document.getElementById('page-identitas');
+    var pageProgram = document.getElementById('page-program');
+    var identitySummary = document.getElementById('identitySummary');
+
+    async function muatDataSiswa(){
+      var res = await supabase.from('siswa').select('*');
+      if (res.error){
+        kelasEl.innerHTML = '<option value="">Gagal memuat data</option>';
+        showToast('Gagal memuat data siswa: ' + res.error.message, 'error');
+        return;
+      }
+      siswaData = res.data || [];
+
+      if (siswaData.length === 0){
+        kelasEl.innerHTML = '<option value="">Belum ada data kelas</option>';
+        return;
+      }
+
+      var kelasSet = {};
+      siswaData.forEach(function(s){ kelasSet[s.kelas] = true; });
+      var daftarKelas = Object.keys(kelasSet).sort(function(a,b){
+        return a.localeCompare(b, undefined, {numeric:true});
+      });
+
+      kelasEl.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      daftarKelas.forEach(function(k){
+        var opt = document.createElement('option');
+        opt.value = k; opt.textContent = k;
+        kelasEl.appendChild(opt);
+      });
+    }
+    muatDataSiswa();
+
+    kelasEl.addEventListener('change', function(){
+      selectedKelas = kelasEl.value;
+      selectedNama = '';
+      selectedSiswaId = null;
+      checkReady();
+
+      if (!selectedKelas){
+        namaEl.innerHTML = '<option value="">Pilih kelas terlebih dahulu</option>';
+        namaEl.disabled = true;
+        return;
+      }
+
+      var filtered = siswaData
+        .filter(function(s){ return s.kelas === selectedKelas; })
+        .sort(function(a,b){ return a.nama.localeCompare(b.nama); });
+
+      if (filtered.length === 0){
+        namaEl.innerHTML = '<option value="">Belum ada siswa di kelas ini</option>';
+        namaEl.disabled = true;
+        return;
+      }
+
+      namaEl.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      filtered.forEach(function(s){
+        var opt = document.createElement('option');
+        opt.value = s.nama;
+        opt.dataset.id = s.id;
+        opt.textContent = s.nama;
+        namaEl.appendChild(opt);
+      });
+      namaEl.disabled = false;
+    });
+
+    namaEl.addEventListener('change', function(){
+      selectedNama = namaEl.value;
+      var opt = namaEl.options[namaEl.selectedIndex];
+      selectedSiswaId = (opt && opt.dataset.id) ? opt.dataset.id : null;
+      checkReady();
+    });
+
+    function checkReady(){
+      btnLanjut.disabled = !(selectedKelas && selectedNama);
+    }
+
+    btnLanjut.addEventListener('click', async function(){
+      btnLanjut.disabled = true;
+      btnLanjut.textContent = 'Menyimpan...';
+
+      pageIdentitas.classList.add('hidden');
+      pageProgram.classList.remove('hidden');
+      identitySummary.innerHTML = '<b>Nama:</b> ' + selectedNama + '<br><b>Kelas:</b> ' + selectedKelas;
+      window.scrollTo({top:0, behavior:'smooth'});
+
+      var res = await supabase.from('survei_responses').insert({
+        siswa_id: selectedSiswaId,
+        nama: selectedNama,
+        kelas: selectedKelas,
+        jawaban: {}
+      });
+
+      if (!res.error){
+        document.getElementById('statusSimpan').innerHTML =
+          '<div class="emoji">✅</div>' +
+          '<h3>Data berhasil tersimpan</h3>' +
+          '<p>Nama dan kelas kamu sudah terekap.<br>' +
+          'Pertanyaan survei program akan ditambahkan di sini setelah formatnya siap.</p>';
+        showToast('Data berhasil disimpan', 'success');
+      } else {
+        document.getElementById('statusSimpan').innerHTML =
+          '<div class="emoji">⚠️</div>' +
+          '<h3>Gagal menyimpan</h3>' +
+          '<p>' + res.error.message + '</p>';
+        showToast('Gagal menyimpan: ' + res.error.message, 'error');
+        btnLanjut.disabled = false;
+        btnLanjut.textContent = 'Coba Lagi';
+      }
+    });
+  })();
+
+  /* =========================================================
+     VIEW PORTAL ADMIN
+     ========================================================= */
+  var initAdminOnce = (function(){
+    var initialized = false;
+    var siswaList = [];
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, function(m){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+      });
+    }
+
+    async function loadSiswa(){
+      var res = await supabase.from('siswa').select('*')
+        .order('kelas', { ascending: true })
+        .order('nama', { ascending: true });
+
+      if (res.error){
+        document.getElementById('tableWrap').innerHTML =
+          '<div class="empty-state"><div class="emoji">⚠️</div><p>Gagal memuat data: ' + res.error.message + '</p></div>';
+        showToast('Gagal memuat data siswa', 'error');
+        return;
+      }
+      siswaList = res.data || [];
+      renderKelasOptions();
+      renderStats();
+      renderTable();
+    }
+
+    function renderKelasOptions(){
+      var kelasSet = Array.from(new Set(siswaList.map(function(s){ return s.kelas; })))
+        .sort(function(a,b){ return a.localeCompare(b, undefined, {numeric:true}); });
+
+      document.getElementById('daftarKelasOpt').innerHTML =
+        kelasSet.map(function(k){ return '<option value="'+escapeHtml(k)+'">'; }).join('');
+
+      var filterEl = document.getElementById('filterKelas');
+      var current = filterEl.value;
+      filterEl.innerHTML = '<option value="">Semua Kelas</option>' +
+        kelasSet.map(function(k){ return '<option value="'+escapeHtml(k)+'">'+escapeHtml(k)+'</option>'; }).join('');
+      filterEl.value = kelasSet.indexOf(current) !== -1 ? current : '';
+    }
+
+    function renderStats(){
+      var totalSiswa = siswaList.length;
+      var totalKelas = new Set(siswaList.map(function(s){ return s.kelas; })).size;
+      document.getElementById('statRow').innerHTML =
+        '<div class="stat"><b>' + totalSiswa + '</b><span>Total Siswa</span></div>' +
+        '<div class="stat"><b>' + totalKelas + '</b><span>Total Kelas</span></div>';
+    }
+
+    function renderTable(){
+      var filterKelas = document.getElementById('filterKelas').value;
+      var search = document.getElementById('searchNama').value.trim().toLowerCase();
+
+      var filtered = siswaList.filter(function(s){
+        var matchKelas = !filterKelas || s.kelas === filterKelas;
+        var matchSearch = !search || s.nama.toLowerCase().indexOf(search) !== -1;
+        return matchKelas && matchSearch;
+      });
+
+      var wrap = document.getElementById('tableWrap');
+      if (filtered.length === 0){
+        wrap.innerHTML = '<div class="empty-state"><div class="emoji">🗂️</div><p>Belum ada data siswa' +
+          (filterKelas || search ? ' yang cocok dengan filter.' : '. Tambahkan lewat form di atas.') + '</p></div>';
+        return;
+      }
+
+      var html = '<table><thead><tr><th>Kelas</th><th>Nama</th><th></th></tr></thead><tbody>';
+      filtered.forEach(function(s){
+        html += '<tr data-id="'+s.id+'">' +
+          '<td><span class="kelas-tag">'+escapeHtml(s.kelas)+'</span></td>' +
+          '<td class="cell-nama">'+escapeHtml(s.nama)+'</td>' +
+          '<td><div class="row-actions">' +
+            '<button class="btn btn-ghost btn-sm" data-action="edit">Edit</button>' +
+            '<button class="btn btn-danger btn-sm" data-action="delete">Hapus</button>' +
+          '</div></td>' +
+        '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    function bindOnce(){
+      document.querySelectorAll('.tab-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+          document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+          btn.classList.add('active');
+          document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+      });
+
+      var namaMassalEl = document.getElementById('namaMassal');
+      var hitungMassalEl = document.getElementById('hitungMassal');
+      namaMassalEl.addEventListener('input', function(){
+        var n = namaMassalEl.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean).length;
+        hitungMassalEl.textContent = n + ' nama akan ditambahkan.';
+      });
+
+      document.getElementById('filterKelas').addEventListener('change', renderTable);
+      document.getElementById('searchNama').addEventListener('input', renderTable);
+
+      document.getElementById('btnTambahSatu').addEventListener('click', async function(){
+        var kelas = document.getElementById('kelasSatu').value.trim();
+        var nama = document.getElementById('namaSatu').value.trim();
+        if (!kelas || !nama){
+          showToast('Isi kelas dan nama terlebih dahulu', 'error');
+          return;
+        }
+        var btn = document.getElementById('btnTambahSatu');
+        btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+        var res = await supabase.from('siswa').insert({ kelas: kelas, nama: nama });
+
+        btn.disabled = false; btn.textContent = 'Tambah Siswa';
+        if (res.error){
+          showToast('Gagal menambah: ' + res.error.message, 'error');
+          return;
+        }
+        document.getElementById('namaSatu').value = '';
+        showToast('Siswa berhasil ditambahkan', 'success');
+        loadSiswa();
+      });
+
+      document.getElementById('btnTambahMassal').addEventListener('click', async function(){
+        var kelas = document.getElementById('kelasMassal').value.trim();
+        var namaList = namaMassalEl.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+
+        if (!kelas){
+          showToast('Isi kelas terlebih dahulu', 'error');
+          return;
+        }
+        if (namaList.length === 0){
+          showToast('Isi minimal satu nama', 'error');
+          return;
+        }
+
+        var btn = document.getElementById('btnTambahMassal');
+        btn.disabled = true; btn.textContent = 'Menyimpan ' + namaList.length + ' nama...';
+
+        var rows = namaList.map(function(nama){ return { kelas: kelas, nama: nama }; });
+        var res = await supabase.from('siswa').insert(rows);
+
+        btn.disabled = false; btn.textContent = 'Proses & Simpan Semua';
+        if (res.error){
+          showToast('Gagal menambah data: ' + res.error.message, 'error');
+          return;
+        }
+        namaMassalEl.value = '';
+        hitungMassalEl.textContent = '0 nama akan ditambahkan.';
+        showToast(rows.length + ' siswa berhasil ditambahkan', 'success');
+        loadSiswa();
+      });
+
+      document.getElementById('tableWrap').addEventListener('click', async function(e){
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var tr = btn.closest('tr');
+        var id = tr.dataset.id;
+        var action = btn.dataset.action;
+
+        if (action === 'delete'){
+          if (!confirm('Hapus siswa ini dari daftar?')) return;
+          var res = await supabase.from('siswa').delete().eq('id', id);
+          if (res.error){ showToast('Gagal menghapus: ' + res.error.message, 'error'); return; }
+          showToast('Data siswa dihapus', 'success');
+          loadSiswa();
+          return;
+        }
+
+        if (action === 'edit'){
+          var cell = tr.querySelector('.cell-nama');
+          var currentNama = cell.textContent;
+          cell.innerHTML = '<input type="text" class="edit-input" value="'+escapeHtml(currentNama)+'">';
+          var input = cell.querySelector('input');
+          input.focus();
+          btn.textContent = 'Simpan';
+          btn.dataset.action = 'save';
+
+          var saveHandler = async function(){
+            var newNama = input.value.trim();
+            if (!newNama){ showToast('Nama tidak boleh kosong', 'error'); return; }
+            var res = await supabase.from('siswa').update({ nama: newNama }).eq('id', id);
+            if (res.error){ showToast('Gagal menyimpan: ' + res.error.message, 'error'); return; }
+            showToast('Nama berhasil diperbarui', 'success');
+            loadSiswa();
+          };
+          btn.onclick = function(ev){ ev.stopPropagation(); saveHandler(); };
+          input.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') saveHandler(); });
+        }
+      });
+    }
+
+    return function initAdminOnce(){
+      if (initialized) { loadSiswa(); return; }
+      initialized = true;
+      bindOnce();
+      loadSiswa();
+    };
+  })();
+</script>
+
+</body>
+</html>
