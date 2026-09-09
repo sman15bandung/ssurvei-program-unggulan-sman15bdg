@@ -322,6 +322,34 @@
       padding:3px 9px;border-radius:8px;font-size:12px;font-weight:700;
     }
     .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+    /* ---- Grup Daftar Siswa per Kelas (accordion) ---- */
+    .kelas-group{border:1.5px solid #e6edf7;border-radius:14px;margin-bottom:10px;overflow:hidden;}
+    .kelas-group-header{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:13px 16px;background:var(--bg-soft);cursor:pointer;
+      touch-action:manipulation;-webkit-user-select:none;user-select:none;
+    }
+    .kelas-group-header .kg-title{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--blue-dark);font-size:14px;}
+    .kelas-group-header .kg-count{font-size:11.5px;font-weight:700;color:#fff;background:var(--blue);
+      border-radius:12px;padding:2px 10px;}
+    .kelas-group-header .kg-arrow{transition:transform .2s;color:var(--blue);font-size:12px;}
+    .kelas-group.open .kg-arrow{transform:rotate(180deg);}
+    .kelas-group-body{display:none;}
+    .kelas-group.open .kelas-group-body{display:block;}
+    .kelas-group-body table{border-top:1.5px solid #e6edf7;}
+    .kelas-toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;}
+    .kelas-toolbar button{width:auto;margin:0;padding:7px 13px;font-size:12px;
+      background:#eef3fc;color:var(--blue-dark);border:1px solid #dbe4f3;border-radius:9px;cursor:pointer;font-weight:600;}
+
+    /* ---- Import Excel ---- */
+    .import-summary{background:var(--bg-soft);border-radius:12px;padding:12px 14px;margin:14px 0;font-size:13px;line-height:1.6;}
+    .import-preview-table{max-height:280px;overflow:auto;border:1.5px solid #e6edf7;border-radius:12px;margin-bottom:14px;}
+    .import-preview-table table{width:100%;}
+    .import-preview-table th{position:sticky;top:0;background:#fff;}
+    .import-row-error{background:#fef2f2;}
+    .import-badge-ok{color:#16a34a;font-weight:700;font-size:12px;}
+    .import-badge-warn{color:#d97706;font-weight:700;font-size:12px;}
     .edit-input{padding:7px 9px;font-size:13px;border-radius:8px;}
     .empty-state{text-align:center;padding:34px 10px;color:var(--text-muted);}
     .empty-state .emoji{font-size:34px;margin-bottom:8px;}
@@ -543,6 +571,25 @@
 
       <div class="card">
         <div class="card-title">
+          <div class="badge" style="background:#0891b2;">📥</div>
+          <h2>Import Hasil Survei dari Excel</h2>
+        </div>
+
+        <div class="hint" style="margin:0 0 12px;">
+          Untuk memasukkan hasil survei sebelumnya (misalnya dari Google Form lama). Unduh template dulu supaya format kolomnya sesuai, isi datanya, lalu upload kembali di sini.
+        </div>
+
+        <button class="btn btn-ghost" id="btnUnduhTemplate" style="margin-top:0;">⬇️ Unduh Template Excel</button>
+
+        <div style="margin-top:14px;">
+          <input type="file" id="fileImportSurvei" accept=".xlsx,.xls,.csv" style="width:100%;padding:10px;border:1.5px dashed #b9c9e6;border-radius:12px;background:#f8fafc;font-size:13px;">
+        </div>
+
+        <div id="importPreviewWrap"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
           <div class="badge" style="background:#7c3aed;">📊</div>
           <h2>Statistik &amp; Interpretasi Survei</h2>
         </div>
@@ -611,6 +658,7 @@
   <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
   // ====== KONFIGURASI SUPABASE ======
   var SUPABASE_URL = 'https://xfsmxcwcrcjhxyobttwp.supabase.co';
@@ -1428,6 +1476,8 @@
         '<div class="stat"><b>' + totalKelas + '</b><span>Total Kelas</span></div>';
     }
 
+    var expandedKelas = new Set(); // status buka/tutup grup kelas, bertahan antar re-render
+
     function renderTable(){
       var filterKelas = document.getElementById('filterKelas').value;
       var search = document.getElementById('searchNama').value.trim().toLowerCase();
@@ -1445,19 +1495,74 @@
         return;
       }
 
-      var html = '<table><thead><tr><th>Kelas</th><th>Nama</th><th></th></tr></thead><tbody>';
+      // Kelompokkan data yang sudah difilter berdasarkan kelas (urutan mengikuti data dari server: kelas lalu nama)
+      var groups = [];
+      var groupIndex = {};
       filtered.forEach(function(s){
-        html += '<tr data-id="'+s.id+'">' +
-          '<td><span class="kelas-tag">'+escapeHtml(s.kelas)+'</span></td>' +
-          '<td class="cell-nama">'+escapeHtml(s.nama)+'</td>' +
-          '<td><div class="row-actions">' +
-            '<button class="btn btn-ghost btn-sm" data-action="edit">Edit</button>' +
-            '<button class="btn btn-danger btn-sm" data-action="delete">Hapus</button>' +
-          '</div></td>' +
-        '</tr>';
+        if (!(s.kelas in groupIndex)){
+          groupIndex[s.kelas] = groups.length;
+          groups.push({ kelas: s.kelas, siswa: [] });
+        }
+        groups[groupIndex[s.kelas]].siswa.push(s);
       });
-      html += '</tbody></table>';
-      wrap.innerHTML = html;
+
+      // Kalau hasil filter/pencarian cuma menyisakan 1 kelas, otomatis buka grupnya
+      if (groups.length === 1){ expandedKelas.add(groups[0].kelas); }
+
+      var toolbarHtml = '<div class="kelas-toolbar">' +
+        '<button type="button" id="btnBukaSemuaKelas">Buka Semua</button>' +
+        '<button type="button" id="btnTutupSemuaKelas">Tutup Semua</button>' +
+        '</div>';
+
+      var groupsHtml = groups.map(function(g){
+        var isOpen = expandedKelas.has(g.kelas);
+        var rowsHtml = g.siswa.map(function(s){
+          return '<tr data-id="'+s.id+'">' +
+            '<td class="cell-nama">'+escapeHtml(s.nama)+'</td>' +
+            '<td><div class="row-actions">' +
+              '<button class="btn btn-ghost btn-sm" data-action="edit">Edit</button>' +
+              '<button class="btn btn-danger btn-sm" data-action="delete">Hapus</button>' +
+            '</div></td>' +
+          '</tr>';
+        }).join('');
+
+        return '<div class="kelas-group' + (isOpen ? ' open' : '') + '" data-kelas="'+escapeHtml(g.kelas)+'">' +
+          '<div class="kelas-group-header">' +
+            '<span class="kg-title">🏷️ ' + escapeHtml(g.kelas) + ' <span class="kg-count">' + g.siswa.length + ' siswa</span></span>' +
+            '<span class="kg-arrow">▾</span>' +
+          '</div>' +
+          '<div class="kelas-group-body">' +
+            '<table><thead><tr><th>Nama</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      wrap.innerHTML = toolbarHtml + groupsHtml;
+
+      wrap.querySelectorAll('.kelas-group-header').forEach(function(header){
+        header.addEventListener('click', function(){
+          var group = header.closest('.kelas-group');
+          var kelas = group.dataset.kelas;
+          if (expandedKelas.has(kelas)){
+            expandedKelas.delete(kelas);
+            group.classList.remove('open');
+          } else {
+            expandedKelas.add(kelas);
+            group.classList.add('open');
+          }
+        });
+      });
+
+      var btnBuka = document.getElementById('btnBukaSemuaKelas');
+      var btnTutup = document.getElementById('btnTutupSemuaKelas');
+      if (btnBuka) btnBuka.addEventListener('click', function(){
+        groups.forEach(function(g){ expandedKelas.add(g.kelas); });
+        renderTable();
+      });
+      if (btnTutup) btnTutup.addEventListener('click', function(){
+        expandedKelas.clear();
+        renderTable();
+      });
     }
 
     function bindOnce(){
@@ -1855,6 +1960,182 @@
     }
 
     document.getElementById('filterPertanyaanStat').addEventListener('change', renderStatPertanyaan);
+
+    /* ---- Import Hasil Survei dari Excel ---- */
+    var importRowsParsed = []; // hasil parsing terakhir, menunggu konfirmasi import
+
+    var TEMPLATE_HEADERS = ['Nama', 'Kelas'].concat(STAT_QUESTIONS.map(function(q){ return q.text; })).concat(['Tanggal Isi (YYYY-MM-DD, opsional)']);
+
+    function normalisasiHeader(str){
+      return String(str || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    // Peta dari teks header (dinormalisasi) -> qid, dibangun dari daftar pertanyaan yang sama dengan tab "Per Pertanyaan"
+    var HEADER_TO_QID = {};
+    STAT_QUESTIONS.forEach(function(q){ HEADER_TO_QID[normalisasiHeader(q.text)] = q.id; });
+
+    function unduhTemplateExcel(){
+      var ws = XLSX.utils.aoa_to_sheet([
+        TEMPLATE_HEADERS,
+        ['Contoh Nama Siswa', 'XI-1', 'ISLAM', 'MELAKSANAKAN', '4 Rakaat', '', '', '', '6-10 Buku', 'Tidak', '', 'Tidak', 'Tidak punya usaha', 'Belum, tapi tertarik', '2026-08-15']
+      ]);
+      ws['!cols'] = TEMPLATE_HEADERS.map(function(){ return { wch: 22 }; });
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Template Import');
+      XLSX.writeFile(wb, 'template_import_hasil_survei.xlsx');
+    }
+
+    function parseFileImport(file){
+      var previewWrap = document.getElementById('importPreviewWrap');
+      previewWrap.innerHTML = '<div class="empty-state"><div class="emoji">⏳</div><p>Membaca file...</p></div>';
+
+      var reader = new FileReader();
+      reader.onload = function(e){
+        try {
+          var data = new Uint8Array(e.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          var rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '', raw: false });
+
+          if (rows.length === 0){
+            previewWrap.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><p>File kosong atau tidak terbaca. Pastikan baris pertama berisi header kolom.</p></div>';
+            return;
+          }
+
+          // Petakan header apa adanya (case-insensitive) ke: nama, kelas, tanggal, dan tiap qid pertanyaan
+          var rawHeaders = Object.keys(rows[0]);
+          var headerMap = {}; // header asli -> 'nama' | 'kelas' | 'tanggal' | qid | null
+          rawHeaders.forEach(function(h){
+            var norm = normalisasiHeader(h);
+            if (norm === 'nama') headerMap[h] = 'nama';
+            else if (norm === 'kelas') headerMap[h] = 'kelas';
+            else if (norm.indexOf('tanggal') === 0) headerMap[h] = 'tanggal';
+            else if (HEADER_TO_QID[norm]) headerMap[h] = HEADER_TO_QID[norm];
+            else headerMap[h] = null; // kolom tak dikenali, diabaikan
+          });
+
+          var dikenaliKolom = Object.values(headerMap).filter(function(v){ return v && v !== 'tanggal'; }).length;
+          if (dikenaliKolom < 2){
+            previewWrap.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><p>Header kolom tidak dikenali. Gunakan template yang disediakan supaya nama kolom persis sama.</p></div>';
+            return;
+          }
+
+          importRowsParsed = rows.map(function(row){
+            var nama = '', kelas = '', tanggal = '', jawaban = {};
+            Object.keys(row).forEach(function(h){
+              var target = headerMap[h];
+              var val = String(row[h] || '').trim();
+              if (!val) return;
+              if (target === 'nama') nama = val;
+              else if (target === 'kelas') kelas = val;
+              else if (target === 'tanggal') tanggal = val;
+              else if (target) jawaban[target] = val;
+            });
+            var matchSiswa = siswaList.find(function(s){
+              return s.nama.toLowerCase() === nama.toLowerCase() && s.kelas.toLowerCase() === kelas.toLowerCase();
+            });
+            return {
+              nama: nama, kelas: kelas, tanggal: tanggal, jawaban: jawaban,
+              siswa_id: matchSiswa ? matchSiswa.id : null,
+              valid: !!(nama && kelas)
+            };
+          });
+
+          renderImportPreview();
+        } catch (err){
+          previewWrap.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><p>Gagal membaca file: ' + escapeHtml(err.message) + '</p></div>';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderImportPreview(){
+      var previewWrap = document.getElementById('importPreviewWrap');
+      var validRows = importRowsParsed.filter(function(r){ return r.valid; });
+      var invalidCount = importRowsParsed.length - validRows.length;
+      var tanpaSiswaId = validRows.filter(function(r){ return !r.siswa_id; }).length;
+
+      var summaryHtml = '<div class="import-summary">' +
+        '📄 <b>' + importRowsParsed.length + ' baris</b> terbaca dari file.<br>' +
+        '<span class="import-badge-ok">✓ ' + validRows.length + ' siap diimport</span>' +
+        (invalidCount > 0 ? ' &nbsp;•&nbsp; <span class="import-badge-warn">⚠ ' + invalidCount + ' baris dilewati (Nama/Kelas kosong)</span>' : '') +
+        (tanpaSiswaId > 0 ? '<br><span class="import-badge-warn">⚠ ' + tanpaSiswaId + ' siswa tidak ditemukan di Daftar Siswa (tetap akan diimport, hanya tidak tertaut ke data siswa)</span>' : '') +
+        '</div>';
+
+      var rowsHtml = importRowsParsed.slice(0, 50).map(function(r){
+        var jumlahJawaban = Object.keys(r.jawaban).length;
+        return '<tr class="' + (r.valid ? '' : 'import-row-error') + '">' +
+          '<td>' + escapeHtml(r.nama || '-') + '</td>' +
+          '<td>' + escapeHtml(r.kelas || '-') + '</td>' +
+          '<td>' + jumlahJawaban + ' pertanyaan terisi</td>' +
+          '<td>' + (r.valid ? '<span class="import-badge-ok">Siap</span>' : '<span class="import-badge-warn">Dilewati</span>') + '</td>' +
+        '</tr>';
+      }).join('');
+
+      var tableHtml = '<div class="import-preview-table"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Jawaban</th><th>Status</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' +
+        (importRowsParsed.length > 50 ? '<div class="hint" style="margin-top:-8px;">Menampilkan 50 baris pertama dari ' + importRowsParsed.length + ' total.</div>' : '');
+
+      var btnHtml = '<button class="btn" id="btnKonfirmasiImport"' + (validRows.length === 0 ? ' disabled' : '') + '>Import ' + validRows.length + ' Data Sekarang</button>';
+
+      previewWrap.innerHTML = summaryHtml + tableHtml + btnHtml;
+
+      document.getElementById('btnKonfirmasiImport').addEventListener('click', jalankanImport);
+    }
+
+    async function jalankanImport(){
+      var btn = document.getElementById('btnKonfirmasiImport');
+      var validRows = importRowsParsed.filter(function(r){ return r.valid; });
+      btn.disabled = true;
+      btn.textContent = 'Mengimport 0/' + validRows.length + '...';
+
+      var payload = validRows.map(function(r){
+        var createdAt = r.tanggal ? new Date(r.tanggal) : null;
+        var obj = {
+          nama: r.nama,
+          kelas: r.kelas,
+          siswa_id: r.siswa_id,
+          jawaban: r.jawaban
+        };
+        if (createdAt && !isNaN(createdAt.getTime())){
+          obj.created_at = createdAt.toISOString();
+        }
+        return obj;
+      });
+
+      var CHUNK = 50;
+      var sukses = 0, gagal = 0;
+      for (var i = 0; i < payload.length; i += CHUNK){
+        var chunk = payload.slice(i, i + CHUNK);
+        var res = await supabase.from('survei_responses').insert(chunk);
+        if (res.error){ gagal += chunk.length; } else { sukses += chunk.length; }
+        btn.textContent = 'Mengimport ' + Math.min(i + CHUNK, payload.length) + '/' + payload.length + '...';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Import ' + validRows.length + ' Data Sekarang';
+
+      if (gagal === 0){
+        showToast(sukses + ' data survei berhasil diimport', 'success');
+        showSavedStatus(sukses + ' data survei tersimpan');
+      } else {
+        showToast(sukses + ' berhasil, ' + gagal + ' gagal diimport', 'error');
+      }
+
+      importRowsParsed = [];
+      document.getElementById('fileImportSurvei').value = '';
+      document.getElementById('importPreviewWrap').innerHTML =
+        '<div class="import-summary"><span class="import-badge-ok">✓ Import selesai</span> — ' + sukses + ' data tersimpan' + (gagal > 0 ? ', ' + gagal + ' gagal' : '') + '.</div>';
+
+      loadStatistik();
+      loadStatistikPertanyaan();
+    }
+
+    document.getElementById('btnUnduhTemplate').addEventListener('click', unduhTemplateExcel);
+    document.getElementById('fileImportSurvei').addEventListener('change', function(e){
+      if (e.target.files && e.target.files[0]){
+        parseFileImport(e.target.files[0]);
+      }
+    });
 
     return function initAdminOnce(){
       if (initialized) { loadSiswa(); loadStatistik(); loadStatistikPertanyaan(); return; }
