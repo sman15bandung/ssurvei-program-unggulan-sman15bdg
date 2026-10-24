@@ -350,6 +350,42 @@
     .kelas-toolbar button{width:auto;margin:0;padding:7px 13px;font-size:12px;
       background:#eef3fc;color:var(--blue-dark);border:1px solid #dbe4f3;border-radius:9px;cursor:pointer;font-weight:600;}
 
+    /* ---- Laporan Hasil Survei ---- */
+    .lap-header-preview{border:1.5px dashed #b9c9e6;border-radius:12px;overflow:hidden;background:#f8fafc;margin-bottom:10px;}
+    .lap-header-preview img{width:100%;max-height:160px;object-fit:cover;object-position:center top;display:block;}
+    .lap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
+    .lap-row input[type=file]{flex:1;min-width:180px;padding:9px;border:1.5px dashed #b9c9e6;border-radius:12px;background:#f8fafc;font-size:13px;}
+    .lap-row .btn{margin-top:0;width:auto;padding:10px 14px;font-size:13px;}
+    .lap-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#e5e7eb;z-index:9999;overflow:auto;-webkit-overflow-scrolling:touch;}
+    .lap-toolbar{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:center;padding:10px;background:#1e3a8a;}
+    .lap-toolbar button{width:auto;margin:0;padding:9px 16px;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;touch-action:manipulation;}
+    .lap-toolbar .lap-cetak{background:#fff;color:#1e3a8a;}
+    .lap-toolbar .lap-tutup{background:#3b5bb5;color:#fff;}
+    .lap-page{background:#fff;max-width:820px;margin:14px auto;box-shadow:0 4px 20px rgba(0,0,0,.15);}
+    .lap-header-img{width:100%;max-height:230px;object-fit:cover;object-position:center top;display:block;}
+    .lap-body{padding:20px 28px 28px;font-size:13.5px;line-height:1.6;color:#1e293b;}
+    .lap-body h1{font-size:20px;margin:0 0 4px;color:#1e3a8a;text-align:center;}
+    .lap-sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:16px;}
+    .lap-body h2{font-size:15px;color:#1e3a8a;border-bottom:2px solid #dbe4f3;padding-bottom:4px;margin:22px 0 10px;}
+    .lap-body h3{font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#2563eb;margin:18px 0 8px;}
+    .lap-body table{width:100%;border-collapse:collapse;font-size:13px;}
+    .lap-body th,.lap-body td{border:1px solid #dbe4f3;padding:6px 10px;text-align:left;}
+    .lap-body th{background:#eef3fc;color:#1e3a8a;}
+    .lap-body td.num,.lap-body th.num{text-align:center;}
+    .lap-ttd{margin-top:32px;display:flex;justify-content:flex-end;}
+    .lap-ttd div{text-align:center;min-width:220px;}
+    .lap-ttd .ruang{height:70px;}
+    @media print{
+      body.lap-printing{background:#fff !important;padding:0 !important;}
+      body.lap-printing > *:not(.lap-overlay){display:none !important;}
+      .lap-overlay{position:static;overflow:visible;background:#fff;}
+      .lap-toolbar{display:none !important;}
+      .lap-page{box-shadow:none;margin:0;max-width:none;}
+      .lap-overlay *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      .lap-body .ringkas-card{break-inside:avoid;page-break-inside:avoid;}
+      .lap-body h2,.lap-body h3{break-after:avoid;page-break-after:avoid;}
+    }
+
     /* ---- Belum Mengisi Survei ---- */
     .belum-list{margin:0;padding:10px 16px 12px 34px;font-size:14px;line-height:1.7;}
     .belum-actions{display:flex;justify-content:flex-end;padding:0 14px 12px;}
@@ -584,6 +620,37 @@
             <p>Memuat data...</p>
           </div>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="badge" style="background:#0f766e;">📄</div>
+          <h2>Laporan Hasil Survei</h2>
+        </div>
+
+        <div class="hint" style="margin:0 0 12px;">Buat laporan lengkap (diagram, analisis, dan interpretasi) yang siap dicetak atau disimpan sebagai PDF. Gambar header laporan bisa diganti.</div>
+
+        <label>Gambar Header Laporan</label>
+        <div class="lap-header-preview"><img id="lapHeaderPreview" alt="Pratinjau header laporan"></div>
+        <div class="lap-row">
+          <input type="file" id="lapHeaderFile" accept="image/*">
+          <button type="button" class="btn btn-ghost" id="lapHeaderReset">Kembalikan Default</button>
+        </div>
+        <div class="hint" style="margin:0 0 6px;">Disarankan rasio sekitar 2,3 : 1 (misalnya 1200 x 520 px). Pilihan gambar tersimpan di browser ini.</div>
+
+        <label for="lapJudul">Judul Laporan</label>
+        <input type="text" id="lapJudul" value="Laporan Hasil Survei Program Unggulan">
+
+        <label for="lapPeriode">Periode / Keterangan (opsional)</label>
+        <input type="text" id="lapPeriode" placeholder="Contoh: Tahun Pelajaran 2026/2027">
+
+        <label for="lapPenyusun">Disusun oleh (opsional)</label>
+        <input type="text" id="lapPenyusun" placeholder="Nama penyusun">
+
+        <label for="lapJabatan">Jabatan (opsional)</label>
+        <input type="text" id="lapJabatan" placeholder="Jabatan penyusun">
+
+        <button class="btn" id="btnBuatLaporan">📄 Buat Laporan</button>
       </div>
 
       <div class="card">
@@ -2605,6 +2672,217 @@
         else { belumOpen.add(kelas); group.classList.add('open'); }
       }
     });
+
+    /* ---- Laporan Hasil Survei (cetak / simpan PDF) ---- */
+    var LAP_KEY_IMG = 'laporanHeaderImg';
+    var LAP_KEY_FIELDS = 'laporanFields';
+    var lapHeaderMemori = null;
+
+    function lapHeaderDefault(){
+      var el = document.getElementById('schoolIcon');
+      return el ? el.src : '';
+    }
+    function lapGetHeader(){
+      if (lapHeaderMemori) return lapHeaderMemori;
+      try { var v = localStorage.getItem(LAP_KEY_IMG); if (v) return v; } catch (e){}
+      return lapHeaderDefault();
+    }
+    function lapRefreshPreview(){
+      document.getElementById('lapHeaderPreview').src = lapGetHeader();
+    }
+    function lapKecilkanGambar(file, cb){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        var img = new Image();
+        img.onload = function(){
+          var sc = Math.min(1, 1400 / img.width);
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.width * sc);
+          c.height = Math.round(img.height * sc);
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          cb(c.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = function(){ showToast('File gambar tidak dapat dibaca', 'error'); };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function lapSimpanFields(){
+      var data = {
+        judul: document.getElementById('lapJudul').value,
+        periode: document.getElementById('lapPeriode').value,
+        penyusun: document.getElementById('lapPenyusun').value,
+        jabatan: document.getElementById('lapJabatan').value
+      };
+      try { localStorage.setItem(LAP_KEY_FIELDS, JSON.stringify(data)); } catch (e){}
+    }
+    function lapMuatFields(){
+      try {
+        var raw = localStorage.getItem(LAP_KEY_FIELDS);
+        if (!raw) return;
+        var d = JSON.parse(raw);
+        if (d.judul) document.getElementById('lapJudul').value = d.judul;
+        document.getElementById('lapPeriode').value = d.periode || '';
+        document.getElementById('lapPenyusun').value = d.penyusun || '';
+        document.getElementById('lapJabatan').value = d.jabatan || '';
+      } catch (e){}
+    }
+
+    document.getElementById('lapHeaderFile').addEventListener('change', function(e){
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+      lapKecilkanGambar(file, function(dataUrl){
+        lapHeaderMemori = dataUrl;
+        try { localStorage.setItem(LAP_KEY_IMG, dataUrl); }
+        catch (err){ showToast('Gambar dipakai untuk sesi ini saja (penyimpanan browser penuh)', 'error'); }
+        lapRefreshPreview();
+        showToast('Gambar header laporan diganti', 'success');
+      });
+    });
+    document.getElementById('lapHeaderReset').addEventListener('click', function(){
+      lapHeaderMemori = null;
+      try { localStorage.removeItem(LAP_KEY_IMG); } catch (e){}
+      document.getElementById('lapHeaderFile').value = '';
+      lapRefreshPreview();
+      showToast('Header dikembalikan ke gambar default', 'success');
+    });
+    ['lapJudul', 'lapPeriode', 'lapPenyusun', 'lapJabatan'].forEach(function(id){
+      document.getElementById(id).addEventListener('input', lapSimpanFields);
+    });
+    lapMuatFields();
+    lapRefreshPreview();
+
+    function bangunHtmlLaporan(rows, opsi){
+      var tgl = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      var totalSiswa = belumData.siswa.length;
+      var belum = hitungBelumMengisi();
+      var sudahMengisi = totalSiswa - belum.length;
+
+      // Partisipasi per kelas
+      var perKelas = {};
+      belumData.siswa.forEach(function(s){
+        if (!perKelas[s.kelas]) perKelas[s.kelas] = { total: 0, belum: 0 };
+        perKelas[s.kelas].total++;
+      });
+      belum.forEach(function(s){ if (perKelas[s.kelas]) perKelas[s.kelas].belum++; });
+      var kelasRows = Object.keys(perKelas).sort(function(a, b){ return a.localeCompare(b, 'id', { numeric: true }); }).map(function(k){
+        var t = perKelas[k].total, b = perKelas[k].belum, s = t - b;
+        return '<tr><td>' + escapeHtml(k) + '</td><td class="num">' + t + '</td><td class="num">' + s + '</td><td class="num">' + b + '</td><td class="num">' + fmtPersen(s, t) + '</td></tr>';
+      }).join('');
+
+      var items = SURVEI_PERTANYAAN.map(function(q){
+        var a = analisisSurvei(q.id, rows);
+        return a ? { q: q, a: a } : null;
+      }).filter(Boolean);
+
+      var hasilHtml = '';
+      var kategoriSebelumnya = '';
+      items.forEach(function(it, i){
+        if (it.q.category !== kategoriSebelumnya){
+          hasilHtml += '<h3>' + escapeHtml(it.q.category) + '</h3>';
+          kategoriSebelumnya = it.q.category;
+        }
+        var vals = ambilNilai(barisUntuk(it.q.id, rows), it.q.id);
+        hasilHtml += '<div class="ringkas-card">' +
+          '<div class="ringkas-cat">' + (i + 1) + '. ' + escapeHtml(it.q.text) + ' <span class="ringkas-n">' + it.a.n + ' responden</span></div>' +
+          bangunDiagram(vals) +
+          '<div class="ringkas-analisis"><b>Analisis:</b><ul><li>' + it.a.headline + '</li>' +
+            it.a.poin.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul></div>' +
+          '<div class="ringkas-kes"><b>Interpretasi:</b> ' + it.a.kesimpulan + '</div>' +
+        '</div>';
+      });
+
+      var kesimpulanHtml = '<ul>' + items.map(function(it){
+        return '<li><b>' + escapeHtml(it.q.text) + ':</b> ' + it.a.kesimpulan + '</li>';
+      }).join('') + '</ul>';
+
+      var ttd = '';
+      if (opsi.penyusun || opsi.jabatan){
+        ttd = '<div class="lap-ttd"><div>' + escapeHtml(tgl) + '<br>' + (opsi.jabatan ? escapeHtml(opsi.jabatan) + ',' : 'Disusun oleh,') +
+          '<div class="ruang"></div><b>' + escapeHtml(opsi.penyusun || '') + '</b></div></div>';
+      }
+
+      return '' +
+        '<div class="lap-toolbar"><button type="button" class="lap-cetak" id="lapBtnCetak">🖨️ Cetak / Simpan PDF</button>' +
+        '<button type="button" class="lap-tutup" id="lapBtnTutup">✕ Tutup</button></div>' +
+        '<div class="lap-page">' +
+          '<img class="lap-header-img" id="lapHeaderImg" alt="Header laporan">' +
+          '<div class="lap-body">' +
+            '<h1>' + escapeHtml(opsi.judul || 'Laporan Hasil Survei') + '</h1>' +
+            '<div class="lap-sub">' + (opsi.periode ? escapeHtml(opsi.periode) + ' &middot; ' : '') + 'Dicetak ' + escapeHtml(tgl) + '</div>' +
+            '<h2>Ringkasan Partisipasi</h2>' +
+            '<div class="stat-row">' +
+              '<div class="stat"><b>' + rows.length + '</b><span>Pengisian Survei</span></div>' +
+              '<div class="stat"><b>' + totalSiswa + '</b><span>Siswa Terdaftar</span></div>' +
+              '<div class="stat"><b>' + fmtPersen(sudahMengisi, totalSiswa) + '</b><span>Partisipasi</span></div>' +
+              '<div class="stat"><b>' + belum.length + '</b><span>Belum Mengisi</span></div>' +
+            '</div>' +
+            (kelasRows ? '<table><thead><tr><th>Kelas</th><th class="num">Siswa</th><th class="num">Sudah</th><th class="num">Belum</th><th class="num">Partisipasi</th></tr></thead><tbody>' + kelasRows + '</tbody></table>' : '') +
+            '<h2>Hasil per Pertanyaan</h2>' + hasilHtml +
+            '<h2>Kesimpulan Umum</h2>' + kesimpulanHtml +
+            ttd +
+          '</div>' +
+        '</div>';
+    }
+
+    function tutupLaporan(){
+      var ov = document.getElementById('lapOverlay');
+      if (ov) ov.parentNode.removeChild(ov);
+      document.body.classList.remove('lap-printing');
+      document.body.style.overflow = '';
+    }
+
+    async function buatLaporan(){
+      var btn = document.getElementById('btnBuatLaporan');
+      btn.disabled = true;
+      btn.textContent = 'Menyusun laporan...';
+
+      var r1 = await supabase.from('siswa').select('id, kelas, nama');
+      var r2 = await supabase.from('survei_responses').select('siswa_id, nama, kelas, jawaban');
+
+      btn.disabled = false;
+      btn.textContent = '📄 Buat Laporan';
+
+      if (r1.error || r2.error){
+        showToast('Gagal memuat data: ' + (r1.error || r2.error).message, 'error');
+        return;
+      }
+      var data = r2.data || [];
+      if (data.length === 0){
+        showToast('Belum ada data survei untuk dilaporkan', 'error');
+        return;
+      }
+      belumData.siswa = r1.data || [];
+      belumData.sudah = data;
+      var rows = data.map(function(r){ return r.jawaban || {}; });
+
+      var opsi = {
+        judul: document.getElementById('lapJudul').value.trim(),
+        periode: document.getElementById('lapPeriode').value.trim(),
+        penyusun: document.getElementById('lapPenyusun').value.trim(),
+        jabatan: document.getElementById('lapJabatan').value.trim()
+      };
+
+      tutupLaporan();
+      var ov = document.createElement('div');
+      ov.className = 'lap-overlay';
+      ov.id = 'lapOverlay';
+      ov.innerHTML = bangunHtmlLaporan(rows, opsi);
+      document.body.appendChild(ov);
+      document.getElementById('lapHeaderImg').src = lapGetHeader();
+      document.body.classList.add('lap-printing');
+      document.body.style.overflow = 'hidden';
+      ov.scrollTop = 0;
+
+      document.getElementById('lapBtnCetak').addEventListener('click', function(){ window.print(); });
+      document.getElementById('lapBtnTutup').addEventListener('click', tutupLaporan);
+    }
+
+    document.getElementById('btnBuatLaporan').addEventListener('click', buatLaporan);
 
     return function initAdminOnce(){
       if (initialized) { loadSiswa(); loadStatistik(); loadStatistikPertanyaan(); loadBelumMengisi(); return; }
