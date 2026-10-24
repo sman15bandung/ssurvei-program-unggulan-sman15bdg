@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hasil Survei Program Unggulan</title>
+<style>
+  :root{
+    --blue-dark:#1e3a8a; --blue:#2563eb; --blue-light:#60a5fa; --bg-soft:#eef4ff;
+    --text-dark:#1e293b; --text-muted:#64748b; --green:#16a34a; --red:#dc2626;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{margin:0;background:transparent;color:var(--text-dark);font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;line-height:1.55;}
+  .wrap{max-width:860px;margin:0 auto;padding:14px;}
+  h1{font-size:20px;color:var(--blue-dark);margin:0 0 2px;}
+  .sub{color:var(--text-muted);font-size:13px;margin-bottom:14px;}
+  h2{font-size:16px;color:var(--blue-dark);border-bottom:2px solid #dbe4f3;padding-bottom:5px;margin:24px 0 12px;}
+  h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--blue);margin:18px 0 8px;}
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .toolbar label{font-weight:700;font-size:13px;color:var(--blue-dark);}
+  select{padding:10px 14px;border-radius:12px;border:1.5px solid #dbe4f3;font-size:16px;background:#f8fafc;color:var(--text-dark);font-family:inherit;min-width:170px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  th,td{border:1px solid #dbe4f3;padding:6px 10px;text-align:left;}
+  th{background:#eef3fc;color:var(--blue-dark);}
+  td.num,th.num{text-align:center;}
+  .tbl-scroll{overflow-x:auto;}
+  .foot{margin-top:22px;color:var(--text-muted);font-size:12px;text-align:center;}
+  .hidden{display:none;}
+.hint{font-size:12.5px;
+      color:var(--text-muted);
+      margin-top:10px;
+      text-align:center;
+      line-height:1.5;}
+.stat-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.stat-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.chart-wrap{display:flex;align-items:flex-end;gap:10px;
+      height:220px;padding:14px 10px 0;margin-bottom:6px;
+      border-bottom:2px solid #e2e8f0;overflow-x:auto;}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+      min-width:44px;flex:1;height:100%;}
+.chart-bar-value{font-size:12px;font-weight:800;color:var(--blue-dark);margin-bottom:4px;white-space:nowrap;}
+.chart-bar{width:60%;min-width:22px;border-radius:8px 8px 0 0;
+      background:linear-gradient(180deg,#60a5fa,#2563eb);
+      transition:height .4s ease;}
+.chart-bar.zero{background:#e2e8f0;}
+.chart-labels{display:flex;gap:10px;padding:0 10px;overflow-x:auto;}
+.chart-label-col{min-width:44px;flex:1;text-align:center;font-size:11px;color:var(--text-muted);}
+.interpretation-box{background:var(--bg-soft);border-radius:14px;padding:16px 18px;
+      margin-top:18px;font-size:13.5px;line-height:1.7;color:var(--text-dark);}
+.interpretation-box h4{margin:0 0 8px;font-size:13.5px;color:var(--blue-dark);}
+.interpretation-box ul{margin:8px 0 0;padding-left:18px;}
+.interpretation-box li{margin-bottom:4px;}
+.trend-up{color:#16a34a;font-weight:700;}
+.trend-down{color:#dc2626;font-weight:700;}
+.trend-flat{color:var(--text-muted);font-weight:700;}
+.ringkas-card{border:1.5px solid #e6edf7;border-radius:14px;padding:14px 16px;margin-bottom:14px;background:#fff;}
+.ringkas-card .hbar-row:last-of-type{margin-bottom:6px;}
+.ringkas-analisis{background:var(--bg-soft);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:13px;line-height:1.6;}
+.ringkas-analisis ul{margin:6px 0 0;padding-left:18px;}
+.ringkas-kes{background:#f0fdf4;border-left:4px solid #16a34a;border-radius:0 12px 12px 0;padding:10px 14px;margin-top:10px;font-size:13px;line-height:1.6;}
+.ringkas-item{border-left:4px solid var(--blue);background:#f8fafc;border-radius:0 12px 12px 0;padding:10px 14px;margin-bottom:10px;font-size:13.5px;line-height:1.55;}
+.ringkas-cat{font-size:11.5px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;}
+.ringkas-n{font-weight:600;color:var(--text-muted);text-transform:none;letter-spacing:0;margin-left:6px;}
+.hbar-row{margin-bottom:12px;}
+.hbar-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:5px;}
+.hbar-top .lbl{color:var(--text-dark);font-weight:600;}
+.hbar-top .val{color:var(--blue-dark);font-weight:800;white-space:nowrap;}
+.hbar-track{height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden;}
+.hbar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#60a5fa,#2563eb);transition:width .4s ease;}
+.stat{background:var(--bg-soft);border-radius:12px;padding:10px 14px;flex:1;min-width:110px;text-align:center;}
+.stat b{display:block;font-size:20px;color:var(--blue-dark);}
+.stat span{font-size:11.5px;color:var(--text-muted);}
+.kelas-tag{display:inline-block;background:var(--bg-soft);color:var(--blue-dark);
+      padding:3px 9px;border-radius:8px;font-size:12px;font-weight:700;}
+.empty-state{text-align:center;padding:34px 10px;color:var(--text-muted);}
+.empty-state .emoji{font-size:34px;margin-bottom:8px;}
+.empty-state p{margin:0;font-size:13.5px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div id="headTitle">
+    <h1>Hasil Survei Program Unggulan</h1>
+    <div class="sub">SMAN 15 Bandung</div>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <label for="selBulan">Bulan:</label>
+    <select id="selBulan"><option value="semua">Semua Bulan</option></select>
+  </div>
+
+  <div id="secPartisipasi">
+    <h2>Ringkasan Partisipasi</h2>
+    <div id="partisipasiWrap"><div class="empty-state"><div class="emoji">⏳</div><p>Memuat data...</p></div></div>
+  </div>
+
+  <div id="secTren">
+    <h2>Tren Pengisian per Bulan</h2>
+    <div id="trenWrap"></div>
+    <div class="interpretation-box" id="trenInterp"></div>
+  </div>
+
+  <div id="secPertanyaan">
+    <h2>Hasil per Pertanyaan</h2>
+    <div id="pertanyaanWrap"></div>
+  </div>
+
+  <div class="foot" id="footInfo"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://xfsmxcwcrcjhxyobttwp.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_8GfQ7g8d4PmdDKh7H6dDsA_zKcPFcEt';
+  var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Supabase membatasi 1000 baris per permintaan, jadi data diambil bertahap.
+  async function ambilSemuaBaris(tabel, kolom){
+    var semua = [], dari = 0, ukuran = 1000;
+    while (true){
+      var res = await supabase.from(tabel).select(kolom).order('id', { ascending: true }).range(dari, dari + ukuran - 1);
+      if (res.error) return { data: null, error: res.error };
+      semua = semua.concat(res.data || []);
+      if (!res.data || res.data.length < ukuran) break;
+      dari += ukuran;
+    }
+    return { data: semua, error: null };
+  }
+  /* =========================================================
+     INTERPRETASI HASIL SURVEI PER PERTANYAAN
+     (dipakai bersama oleh halaman awal dan portal admin)
+     ========================================================= */
+  var SURVEI_PERTANYAAN = [
+    { id:'q_agama',      category:'Program Keagamaan',                text:'Agama' },
+    { id:'q_dhuha',      category:'Program Sholat Dhuha',             text:'Pelaksanaan Sholat Dhuha' },
+    { id:'q_rakaat',     category:'Program Sholat Dhuha',             text:'Jumlah rakaat rata-rata per bulan' },
+    { id:'q_renungan',   category:'Program Renungan Pagi',            text:'Pelaksanaan Renungan Pagi' },
+    { id:'q_ayat',       category:'Program Renungan Pagi',            text:'Banyaknya ayat yang dihafal' },
+    { id:'q_pembiasaan', category:'Pembiasaan Pagi',                  text:'Pelaksanaan Pembiasaan Pagi' },
+    { id:'q_buku',       category:'Program Baca Buku',                text:'Jumlah buku yang dibaca' },
+    { id:'q_rekening',   category:'Program Nabung Saham',             text:'Memiliki Rekening Saham' },
+    { id:'q_saham',      category:'Program Nabung Saham',             text:'Jumlah Saham' },
+    { id:'q_usaha',      category:'Program Digital Entrepreneurship', text:'Memiliki usaha sendiri' },
+    { id:'q_bidang',     category:'Program Digital Entrepreneurship', text:'Bidang usaha' },
+    { id:'q_digital',    category:'Program Digital Entrepreneurship', text:'Pengalaman mengelola usaha digital' }
+  ];
+
+  function escG(s){
+    return String(s).replace(/[&<>"']/g, function(m){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+    });
+  }
+  function fmtPersen(n, total){
+    if (!total) return '0%';
+    var p = (n / total) * 100;
+    if (n > 0 && p < 1) return '<1%';
+    return Math.round(p) + '%';
+  }
+  function pctNum(n, total){ return total ? Math.round((n / total) * 100) : 0; }
+  function tingkatPositif(p){
+    if (p >= 80) return 'sangat baik';
+    if (p >= 60) return 'baik';
+    if (p >= 40) return 'cukup';
+    if (p >= 20) return 'rendah';
+    return 'sangat rendah';
+  }
+  function ambilNilai(rows, qid){
+    return rows.map(function(r){ return r[qid]; })
+      .filter(function(v){ return v !== undefined && v !== null && v !== ''; });
+  }
+  function sebaranJawaban(vals){
+    var c = {};
+    vals.forEach(function(v){
+      var k = (typeof v === 'string' && v.indexOf('Lainnya:') === 0) ? 'Lainnya (jawaban custom)' : v;
+      c[k] = (c[k] || 0) + 1;
+    });
+    return Object.keys(c).map(function(k){ return { label:k, count:c[k] }; })
+      .sort(function(a, b){ return b.count - a.count; });
+  }
+  function angkaDariLabel(label){
+    var m = String(label).match(/\d+/g);
+    return m ? m.map(Number) : [];
+  }
+  function lc(s){ return String(s).trim().toLowerCase(); }
+  function hitungJika(vals, fn){ return vals.filter(fn).length; }
+
+  // Jumlah saham hanya relevan untuk siswa yang punya rekening saham.
+  // Data lama (Google Form) kadang diisi semua siswa, jadi disaring di sini.
+  function barisUntuk(qid, rows){
+    if (qid === 'q_saham'){
+      return rows.filter(function(r){ return !r.q_rekening || String(r.q_rekening).trim().toLowerCase() === 'ya'; });
+    }
+    return rows;
+  }
+
+  function analisisPelaksanaan(vals, program){
+    var n = vals.length;
+    var ya = hitungJika(vals, function(v){ return lc(v) === 'melaksanakan'; });
+    var tidak = n - ya;
+    var p = pctNum(ya, n);
+    var saran;
+    if (p >= 80) saran = 'Pelaksanaan ' + program + ' sudah sangat baik. Pertahankan lewat pemantauan berkala dan apresiasi bagi siswa yang konsisten.';
+    else if (p >= 60) saran = 'Pelaksanaan ' + program + ' tergolong baik, namun masih ada ' + tidak + ' siswa yang perlu didorong oleh wali kelas dan pembimbing.';
+    else if (p >= 40) saran = 'Baru sekitar separuh siswa yang melaksanakan ' + program + '. Perlu penguatan pembiasaan dan pemantauan rutin, terutama bagi ' + tidak + ' siswa yang belum melaksanakan.';
+    else saran = 'Pelaksanaan ' + program + ' masih rendah. Perlu evaluasi kendala (waktu, motivasi, pendampingan) dan pendampingan lebih intensif oleh wali kelas.';
+    return {
+      n: n,
+      headline: '<b>' + fmtPersen(ya, n) + '</b> siswa (' + ya + ' dari ' + n + ') melaksanakan ' + program + '.',
+      poin: [
+        tidak + ' siswa (' + fmtPersen(tidak, n) + ') belum melaksanakan.',
+        'Tingkat pelaksanaan tergolong <b>' + tingkatPositif(p) + '</b>.'
+      ],
+      kesimpulan: saran
+    };
+  }
+
+  function analisisSurvei(qid, rows){
+    rows = barisUntuk(qid, rows);
+    var vals = ambilNilai(rows, qid);
+    var n = vals.length;
+    if (n === 0) return null;
+    var e = sebaranJawaban(vals);
+    var top = e[0];
+
+    if (qid === 'q_agama'){
+      var cAg = function(nama){ return hitungJika(vals, function(v){ return String(v).toUpperCase() === nama; }); };
+      var muslim = cAg('ISLAM'), krist = cAg('KRISTEN') + cAg('KATOLIK'), hb = cAg('HINDU') + cAg('BUDHA');
+      var prog = { 'ISLAM':'Sholat Dhuha', 'KRISTEN':'Renungan Pagi', 'KATOLIK':'Renungan Pagi', 'HINDU':'Pembiasaan Pagi', 'BUDHA':'Pembiasaan Pagi' };
+      var kes = 'Mayoritas siswa beragama ' + escG(top.label) + ' (' + fmtPersen(top.count, n) + '), sehingga program keagamaan yang paling banyak menjangkau siswa adalah ' + (prog[String(top.label).toUpperCase()] || 'program keagamaan terkait') + '.';
+      if (e.length > 1) kes += ' Program untuk agama lain tetap perlu mendapat perhatian meski jumlahnya lebih kecil.';
+      return {
+        n: n,
+        headline: 'Komposisi agama: ' + e.map(function(x){ return escG(x.label) + ' <b>' + x.count + '</b> (' + fmtPersen(x.count, n) + ')'; }).join(' • ') + '.',
+        poin: ['Pertanyaan lanjutan menyesuaikan agama: Sholat Dhuha untuk ' + muslim + ' siswa Muslim, Renungan Pagi untuk ' + krist + ' siswa Kristen/Katolik, dan Pembiasaan Pagi untuk ' + hb + ' siswa Hindu/Budha.'],
+        kesimpulan: kes
+      };
+    }
+
+    if (qid === 'q_dhuha') return analisisPelaksanaan(vals, 'Sholat Dhuha');
+    if (qid === 'q_renungan') return analisisPelaksanaan(vals, 'Renungan Pagi');
+    if (qid === 'q_pembiasaan') return analisisPelaksanaan(vals, 'Pembiasaan Pagi');
+
+    if (qid === 'q_rakaat'){
+      var angka = vals.map(function(v){ return (angkaDariLabel(v)[0] || 0); });
+      var avg = angka.reduce(function(a, b){ return a + b; }, 0) / n;
+      var nol = hitungJika(angka, function(a){ return a === 0; });
+      var banyak = hitungJika(angka, function(a){ return a >= 8; });
+      var kesR;
+      if (avg >= 6) kesR = 'Frekuensi sholat dhuha siswa tergolong baik. Pertahankan kebiasaan ini dan beri apresiasi bagi siswa yang konsisten.';
+      else if (avg >= 3) kesR = 'Frekuensi sholat dhuha tergolong cukup. Siswa perlu didorong untuk menambah jumlah rakaat per bulan secara bertahap.';
+      else kesR = 'Frekuensi sholat dhuha masih rendah. Perlu pembiasaan dan pemantauan lebih rutin dari wali kelas dan pembimbing.';
+      return {
+        n: n,
+        headline: 'Rata-rata <b>' + avg.toFixed(1) + ' rakaat</b> per bulan; jawaban terbanyak <b>' + escG(top.label) + '</b> (' + top.count + ' siswa, ' + fmtPersen(top.count, n) + ').',
+        poin: [
+          nol + ' siswa (' + fmtPersen(nol, n) + ') tercatat 0 rakaat, artinya belum melaksanakan sholat dhuha dalam sebulan.',
+          banyak + ' siswa (' + fmtPersen(banyak, n) + ') melaksanakan 8 rakaat atau lebih.'
+        ],
+        kesimpulan: kesR
+      };
+    }
+
+    if (qid === 'q_ayat'){
+      var nolA = hitungJika(vals, function(v){ return String(v).trim() === '0'; });
+      var sudah = n - nolA;
+      var pA = pctNum(sudah, n);
+      var lebih = hitungJika(vals, function(v){ return lc(v).indexOf('lebih') === 0; });
+      var nonNol = sebaranJawaban(vals.filter(function(v){ return String(v).trim() !== '0'; }));
+      var kesA;
+      if (pA >= 80) kesA = 'Hampir seluruh siswa sudah menghafal ayat. Dorong siswa untuk menambah jumlah hafalan secara bertahap.';
+      else if (pA >= 50) kesA = 'Sebagian besar siswa sudah mulai menghafal, namun ' + nolA + ' siswa belum menghafal sama sekali dan perlu pendampingan khusus.';
+      else kesA = 'Lebih dari separuh siswa belum menghafal ayat. Perlu target hafalan yang jelas dan pendampingan rutin dari pembimbing renungan.';
+      return {
+        n: n,
+        headline: '<b>' + fmtPersen(sudah, n) + '</b> siswa (' + sudah + ' dari ' + n + ') sudah menghafal minimal 1 ayat.',
+        poin: [
+          nolA + ' siswa (' + fmtPersen(nolA, n) + ') belum menghafal ayat.',
+          nonNol.length ? 'Rentang hafalan terbanyak: <b>' + escG(nonNol[0].label) + '</b> (' + nonNol[0].count + ' siswa).' : '',
+          lebih ? lebih + ' siswa (' + fmtPersen(lebih, n) + ') sudah menghafal lebih dari 16 ayat.' : ''
+        ].filter(Boolean),
+        kesimpulan: kesA
+      };
+    }
+
+    if (qid === 'q_buku'){
+      var mids = vals.map(function(v){
+        var a = angkaDariLabel(v);
+        if (a.length >= 2) return (a[0] + a[1]) / 2;
+        return a[0] || 0;
+      });
+      var avgB = mids.reduce(function(x, y){ return x + y; }, 0) / n;
+      var rendah = hitungJika(mids, function(m){ return m <= 5; });
+      var tinggi = hitungJika(mids, function(m){ return m >= 15; });
+      var pRendah = pctNum(rendah, n);
+      var kesB;
+      if (pRendah >= 50) kesB = 'Kebiasaan membaca masih rendah: separuh lebih siswa membaca 5 buku atau kurang. Perlu penguatan gerakan literasi (target baca, resensi buku, pojok baca digital).';
+      else if (pRendah >= 30) kesB = 'Kebiasaan membaca siswa beragam. Masih ada kelompok yang membaca sedikit dan perlu didorong lewat tantangan membaca dan kegiatan literasi.';
+      else kesB = 'Kebiasaan membaca siswa tergolong baik. Pertahankan dengan menyediakan bacaan yang beragam dan apresiasi bagi pembaca aktif.';
+      return {
+        n: n,
+        headline: 'Perkiraan rata-rata <b>' + avgB.toFixed(1) + ' buku</b> per siswa; rentang terbanyak <b>' + escG(top.label) + '</b> (' + top.count + ' siswa, ' + fmtPersen(top.count, n) + ').',
+        poin: [
+          rendah + ' siswa (' + fmtPersen(rendah, n) + ') membaca 0-5 buku.',
+          tinggi + ' siswa (' + fmtPersen(tinggi, n) + ') membaca 11 buku atau lebih.',
+          'Rata-rata dihitung dari titik tengah tiap rentang jawaban, sehingga bersifat perkiraan.'
+        ],
+        kesimpulan: kesB
+      };
+    }
+
+    if (qid === 'q_rekening'){
+      var ya = hitungJika(vals, function(v){ return lc(v) === 'ya'; });
+      var minat = hitungJika(vals, function(v){ return lc(v) === 'berminat'; });
+      var tdk = hitungJika(vals, function(v){ return lc(v) === 'tidak'; });
+      var kesRk = 'Kepemilikan rekening saham masih ' + (pctNum(ya, n) >= 40 ? 'cukup banyak' : 'terbatas') + '.';
+      if (minat > 0) kesRk += ' Terdapat ' + minat + ' siswa berminat yang dapat difasilitasi lewat sosialisasi dan pendampingan pembukaan rekening.';
+      else kesRk += ' Perlu sosialisasi manfaat menabung saham agar minat siswa meningkat.';
+      return {
+        n: n,
+        headline: '<b>' + fmtPersen(ya, n) + '</b> siswa (' + ya + ' dari ' + n + ') sudah memiliki rekening saham; ' + fmtPersen(minat, n) + ' berminat.',
+        poin: [
+          minat + ' siswa (' + fmtPersen(minat, n) + ') belum punya tetapi berminat.',
+          tdk + ' siswa (' + fmtPersen(tdk, n) + ') belum memiliki dan belum berminat.'
+        ],
+        kesimpulan: kesRk
+      };
+    }
+
+    if (qid === 'q_saham'){
+      var awal = hitungJika(vals, function(v){ var a = angkaDariLabel(v); return a.length >= 2 && a[1] <= 5; });
+      var lebihL = hitungJika(vals, function(v){ return lc(v).indexOf('lebih') === 0; });
+      var kesS;
+      if (pctNum(awal, n) >= 50) kesS = 'Sebagian besar pemilik rekening masih pada tahap awal menabung saham (0-5 lot). Perlu dorongan agar menabung secara konsisten.';
+      else kesS = 'Kepemilikan saham terbanyak berada pada rentang ' + escG(top.label) + '. Pantau perkembangan agar tabungan saham terus bertambah.';
+      return {
+        n: n,
+        headline: 'Dari <b>' + n + ' siswa</b> pemilik rekening yang menjawab, kepemilikan terbanyak pada <b>' + escG(top.label) + '</b> (' + top.count + ' siswa, ' + fmtPersen(top.count, n) + ').',
+        poin: [
+          awal + ' siswa (' + fmtPersen(awal, n) + ') baru memiliki 0-5 lot.',
+          lebihL + ' siswa (' + fmtPersen(lebihL, n) + ') memiliki lebih dari 10 lot.'
+        ],
+        kesimpulan: kesS
+      };
+    }
+
+    if (qid === 'q_usaha'){
+      var yaU = hitungJika(vals, function(v){ return lc(v) === 'ya'; });
+      var tdkU = n - yaU;
+      var pU = pctNum(yaU, n);
+      var kesU;
+      if (pU >= 30) kesU = 'Jiwa wirausaha siswa tergolong tinggi. Program entrepreneurship dapat difokuskan pada pendampingan pengembangan usaha yang sudah berjalan.';
+      else if (pU >= 10) kesU = 'Sebagian siswa sudah memiliki usaha. Program entrepreneurship dapat memadukan pendampingan usaha berjalan dengan motivasi bagi siswa yang belum memulai.';
+      else kesU = 'Hanya sedikit siswa yang sudah memiliki usaha. Perlu penguatan program entrepreneurship agar lebih banyak siswa berani memulai.';
+      return {
+        n: n,
+        headline: '<b>' + fmtPersen(yaU, n) + '</b> siswa (' + yaU + ' dari ' + n + ') saat ini memiliki usaha sendiri.',
+        poin: [tdkU + ' siswa (' + fmtPersen(tdkU, n) + ') belum memiliki usaha.'],
+        kesimpulan: kesU
+      };
+    }
+
+    if (qid === 'q_bidang'){
+      var tanpa = hitungJika(vals, function(v){ return lc(v) === 'tidak punya usaha'; });
+      var punya = sebaranJawaban(vals.filter(function(v){ return lc(v) !== 'tidak punya usaha'; }));
+      var jmlPunya = n - tanpa;
+      var custom = hitungJika(vals, function(v){ return typeof v === 'string' && v.indexOf('Lainnya:') === 0; });
+      if (jmlPunya === 0){
+        return {
+          n: n,
+          headline: 'Seluruh <b>' + n + ' siswa</b> yang menjawab menyatakan belum memiliki usaha.',
+          poin: [],
+          kesimpulan: 'Belum ada bidang usaha yang bisa dipetakan. Fokus program sebaiknya pada motivasi dan pelatihan dasar berwirausaha.'
+        };
+      }
+      var bidangTop = punya[0];
+      return {
+        n: n,
+        headline: '<b>' + jmlPunya + ' siswa</b> (' + fmtPersen(jmlPunya, n) + ') menyebut bidang usaha; terbanyak <b>' + escG(bidangTop.label) + '</b> (' + bidangTop.count + ' siswa).',
+        poin: [
+          tanpa + ' siswa (' + fmtPersen(tanpa, n) + ') menjawab tidak punya usaha.',
+          custom ? custom + ' siswa memilih bidang lain di luar pilihan yang tersedia.' : ''
+        ].filter(Boolean),
+        kesimpulan: 'Bidang ' + escG(bidangTop.label) + ' paling banyak digeluti sehingga dapat menjadi fokus pelatihan dan pendampingan, tanpa mengabaikan bidang lain yang jumlahnya lebih kecil.'
+      };
+    }
+
+    if (qid === 'q_digital'){
+      var aktif = hitungJika(vals, function(v){ return lc(v).indexOf('sedang') !== -1; });
+      var pernah = hitungJika(vals, function(v){ return lc(v).indexOf('pernah') !== -1; });
+      var tertarik = hitungJika(vals, function(v){ return lc(v).indexOf('belum') === 0; });
+      var tidakT = hitungJika(vals, function(v){ return lc(v) === 'tidak tertarik'; });
+      var punyaPengalaman = aktif + pernah;
+      var kesD;
+      if (tertarik > 0) kesD = 'Terdapat ' + tertarik + ' siswa yang belum pernah tetapi tertarik. Ini peluang untuk pelatihan dasar usaha digital (jualan online, konten promosi, akun bisnis).';
+      else kesD = 'Perkuat pendampingan bagi siswa yang sudah berpengalaman dan sosialisasikan peluang usaha digital kepada siswa lainnya.';
+      return {
+        n: n,
+        headline: '<b>' + fmtPersen(punyaPengalaman, n) + '</b> siswa (' + punyaPengalaman + ' dari ' + n + ') sudah pernah atau sedang menjalankan usaha digital.',
+        poin: [
+          aktif + ' siswa (' + fmtPersen(aktif, n) + ') sedang menjalankan.',
+          pernah + ' siswa (' + fmtPersen(pernah, n) + ') pernah mencoba.',
+          tertarik + ' siswa (' + fmtPersen(tertarik, n) + ') belum tetapi tertarik.',
+          tidakT + ' siswa (' + fmtPersen(tidakT, n) + ') tidak tertarik.'
+        ],
+        kesimpulan: kesD
+      };
+    }
+
+    return null;
+  }
+
+  function bangunDiagram(vals){
+    var e = sebaranJawaban(vals), total = vals.length;
+    return e.map(function(x){
+      var lebar = Math.max(Math.round((x.count / total) * 100), x.count > 0 ? 1 : 0);
+      return '<div class="hbar-row">' +
+        '<div class="hbar-top"><span class="lbl">' + escG(x.label) + '</span><span class="val">' + x.count + ' (' + fmtPersen(x.count, total) + ')</span></div>' +
+        '<div class="hbar-track"><div class="hbar-fill" style="width:' + lebar + '%"></div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderHasilPertanyaan(wrap, box, qid, rows){
+    if (qid === '__ringkasan__'){ renderRingkasanSemua(wrap, box, rows); return; }
+    var q = SURVEI_PERTANYAAN.filter(function(x){ return x.id === qid; })[0];
+    if (!q) return;
+    rows = barisUntuk(qid, rows);
+    var vals = ambilNilai(rows, qid);
+    if (vals.length === 0){
+      wrap.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>Belum ada jawaban untuk pertanyaan ini.</p></div>';
+      box.innerHTML = '';
+      return;
+    }
+    var total = vals.length;
+    wrap.innerHTML = bangunDiagram(vals);
+
+    var a = analisisSurvei(qid, rows);
+    box.innerHTML =
+      '<h4>📈 Interpretasi - ' + escG(q.text) + '</h4>' +
+      '<ul><li>' + a.headline + '</li>' + a.poin.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul>' +
+      '<h4 style="margin-top:14px;">💡 Kesimpulan</h4>' +
+      '<div>' + a.kesimpulan + '</div>' +
+      '<div class="hint" style="margin-top:10px;">Dasar perhitungan: ' + total + ' siswa yang menjawab pertanyaan ini' + (qid === 'q_saham' ? ' (khusus pemilik rekening saham)' : '') + '.' +
+        (total < 10 ? ' <b>Catatan:</b> jumlah responden masih sedikit sehingga hasil belum dapat digeneralisasi.' : '') + '</div>';
+  }
+
+  function renderRingkasanSemua(wrap, box, rows){
+    var items = SURVEI_PERTANYAAN.map(function(q){
+      var a = analisisSurvei(q.id, rows);
+      return a ? { q: q, a: a } : null;
+    }).filter(Boolean);
+    if (items.length === 0){
+      wrap.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>Belum ada data survei yang masuk.</p></div>';
+      box.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = items.map(function(it, i){
+      var vals = ambilNilai(barisUntuk(it.q.id, rows), it.q.id);
+      return '<div class="ringkas-card">' +
+        '<div class="ringkas-cat">' + (i + 1) + '. ' + escG(it.q.category) + ' &middot; ' + escG(it.q.text) + ' <span class="ringkas-n">' + it.a.n + ' responden</span></div>' +
+        bangunDiagram(vals) +
+        '<div class="ringkas-analisis"><b>📊 Analisis:</b><ul><li>' + it.a.headline + '</li>' +
+          it.a.poin.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul></div>' +
+        '<div class="ringkas-kes"><b>💡 Interpretasi:</b> ' + it.a.kesimpulan + '</div>' +
+      '</div>';
+    }).join('');
+    box.innerHTML = '<div class="hint" style="margin:0;">Berdasarkan ' + rows.length + ' pengisian survei. Pilih satu pertanyaan di dropdown untuk melihat tampilan yang lebih fokus.</div>';
+  }
+  // ===================================
+
+  var saveStatusTimer = null;
+  function showSavedStatus(msg){
+    var el = document.getElementById('saveStatusAdmin');
+    if (!el) return;
+    var jam = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    document.getElementById('saveStatusText').textContent = (msg || 'Tersimpan') + ' · ' + jam;
+    el.classList.add('show');
+    if (saveStatusTimer) clearTimeout(saveStatusTimer);
+    saveStatusTimer = setTimeout(function(){ el.classList.remove('show'); }, 6000);
+  }
+
+  function showToast(msg, type){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(function(){ t.className = 'toast'; }, 2800);
+  }
+
+  /* =========================================================
+     TRIGGER TERSEMBUNYI: klik ikon 🏫 di header 5x berturut-turut
+     dalam 2 detik akan memunculkan modal PIN admin.
+     ========================================================= */
+
+  /* =========================================================
+     TAMPILAN HASIL SURVEI (hanya-baca, bisa ditanam di halaman lain)
+     Parameter URL opsional:
+       ?bulan=2026-10          bulan awal yang ditampilkan
+       ?bagian=partisipasi,tren,pertanyaan   bagian yang ditampilkan
+       ?pilih=0                sembunyikan pilihan bulan
+       ?judul=0                sembunyikan judul
+     ========================================================= */
+  var PARAM = new URLSearchParams(location.search);
+  var BULAN_PENUH = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var BULAN_SINGKAT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  var DATA = { siswa: [], resp: [] };
+
+  function $(id){ return document.getElementById(id); }
+  function keyBulan(t){ var d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function labelBulan(key){
+    if (key === 'semua') return 'Semua Bulan';
+    var p = key.split('-');
+    return BULAN_PENUH[Number(p[1]) - 1] + ' ' + p[0];
+  }
+  function daftarBulan(resp){
+    var set = {};
+    resp.forEach(function(r){ if (r.created_at) set[keyBulan(r.created_at)] = true; });
+    return Object.keys(set).sort().reverse();
+  }
+  function kunciSiswa(nama, kelas){
+    return String(nama || '').trim().toLowerCase().replace(/\s+/g, ' ') + '|' + String(kelas || '').trim().toLowerCase();
+  }
+  function kirimTinggi(){
+    try {
+      var tinggi = Math.ceil(document.documentElement.scrollHeight);
+      window.parent.postMessage({ type: 'hasil-survei-tinggi', tinggi: tinggi }, '*');
+    } catch (e){}
+  }
+
+  function bangunPartisipasi(resp){
+    var idSudah = {}, kunciSudah = {};
+    resp.forEach(function(r){
+      if (r.siswa_id !== null && r.siswa_id !== undefined) idSudah[r.siswa_id] = true;
+      kunciSudah[kunciSiswa(r.nama, r.kelas)] = true;
+    });
+    var perKelas = {};
+    DATA.siswa.forEach(function(s){
+      if (!perKelas[s.kelas]) perKelas[s.kelas] = { total: 0, sudah: 0 };
+      perKelas[s.kelas].total++;
+      if (idSudah[s.id] || kunciSudah[kunciSiswa(s.nama, s.kelas)]) perKelas[s.kelas].sudah++;
+    });
+    var total = DATA.siswa.length;
+    var sudah = Object.keys(perKelas).reduce(function(a, k){ return a + perKelas[k].sudah; }, 0);
+
+    var html = '<div class="stat-row">' +
+      '<div class="stat"><b>' + resp.length + '</b><span>Pengisian Survei</span></div>' +
+      '<div class="stat"><b>' + total + '</b><span>Siswa Terdaftar</span></div>' +
+      '<div class="stat"><b>' + fmtPersen(sudah, total) + '</b><span>Partisipasi</span></div>' +
+      '<div class="stat"><b>' + (total - sudah) + '</b><span>Belum Mengisi</span></div>' +
+    '</div>';
+    var kelasList = Object.keys(perKelas).sort(function(a, b){ return a.localeCompare(b, 'id', { numeric: true }); });
+    if (kelasList.length){
+      html += '<div class="tbl-scroll"><table><thead><tr><th>Kelas</th><th class="num">Siswa</th><th class="num">Sudah</th><th class="num">Belum</th><th class="num">Partisipasi</th></tr></thead><tbody>' +
+        kelasList.map(function(k){
+          var t = perKelas[k].total, s = perKelas[k].sudah;
+          return '<tr><td>' + escG(k) + '</td><td class="num">' + t + '</td><td class="num">' + s + '</td><td class="num">' + (t - s) + '</td><td class="num">' + fmtPersen(s, t) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+    return html;
+  }
+
+  function bangunTren(){
+    var counts = {};
+    DATA.resp.forEach(function(r){ if (r.created_at){ var k = keyBulan(r.created_at); counts[k] = (counts[k] || 0) + 1; } });
+    var keys = Object.keys(counts).sort();
+    if (!keys.length) return { chart: '<div class="empty-state"><div class="emoji">📭</div><p>Belum ada data survei yang masuk.</p></div>', interp: '' };
+
+    var cur = new Date(Number(keys[0].split('-')[0]), Number(keys[0].split('-')[1]) - 1, 1);
+    var end = new Date(Number(keys[keys.length - 1].split('-')[0]), Number(keys[keys.length - 1].split('-')[1]) - 1, 1);
+    var series = [];
+    while (cur <= end){
+      var k = cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0');
+      series.push({ label: BULAN_SINGKAT[cur.getMonth()] + " '" + String(cur.getFullYear()).slice(2), count: counts[k] || 0 });
+      cur.setMonth(cur.getMonth() + 1);
+    }
+    if (series.length > 12) series = series.slice(series.length - 12);
+    var maks = Math.max.apply(null, series.map(function(s){ return s.count; })) || 1;
+
+    var chart = '<div class="chart-wrap">' + series.map(function(s){
+      var tinggi = Math.max(Math.round((s.count / maks) * 100), s.count === 0 ? 4 : 6);
+      return '<div class="chart-bar-col"><div class="chart-bar-value">' + s.count + '</div>' +
+        '<div class="chart-bar' + (s.count === 0 ? ' zero' : '') + '" style="height:' + tinggi + '%"></div></div>';
+    }).join('') + '</div><div class="chart-labels">' + series.map(function(s){
+      return '<div class="chart-label-col">' + s.label + '</div>';
+    }).join('') + '</div>';
+
+    var total = series.reduce(function(a, s){ return a + s.count; }, 0);
+    var tertinggi = series.reduce(function(a, b){ return b.count > a.count ? b : a; }, series[0]);
+    var interp = '<h4>📈 Interpretasi</h4><ul>' +
+      '<li>Total <b>' + total + ' pengisian</b> dalam ' + series.length + ' bulan, rata-rata <b>' + (total / series.length).toFixed(1) + ' per bulan</b>.</li>' +
+      '<li>Pengisian terbanyak terjadi pada <b>' + tertinggi.label + '</b> (' + tertinggi.count + ' pengisi).</li>';
+    if (series.length >= 2){
+      var a = series[series.length - 1], b = series[series.length - 2], d = a.count - b.count;
+      var cls = d > 0 ? 'trend-up' : (d < 0 ? 'trend-down' : 'trend-flat');
+      var teks = d === 0 ? 'stabil, sama seperti bulan sebelumnya' : ((d > 0 ? 'naik ' : 'turun ') + Math.abs(d) + ' pengisi dibanding bulan sebelumnya');
+      interp += '<li>Bulan <b>' + a.label + '</b> <span class="' + cls + '">' + (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '► ') + teks + '</span> (' + b.label + ': ' + b.count + ' → ' + a.label + ': ' + a.count + ').</li>';
+    }
+    interp += '</ul>';
+    return { chart: chart, interp: interp };
+  }
+
+  function bangunKartuPertanyaan(rows){
+    var items = SURVEI_PERTANYAAN.map(function(q){
+      var a = analisisSurvei(q.id, rows);
+      return a ? { q: q, a: a } : null;
+    }).filter(Boolean);
+    if (!items.length) return '<div class="empty-state"><div class="emoji">📭</div><p>Belum ada jawaban pada periode ini.</p></div>';
+
+    var html = '', kategori = '';
+    items.forEach(function(it, i){
+      if (it.q.category !== kategori){ html += '<h3>' + escG(it.q.category) + '</h3>'; kategori = it.q.category; }
+      var vals = ambilNilai(barisUntuk(it.q.id, rows), it.q.id);
+      html += '<div class="ringkas-card">' +
+        '<div class="ringkas-cat">' + (i + 1) + '. ' + escG(it.q.text) + ' <span class="ringkas-n">' + it.a.n + ' responden</span></div>' +
+        bangunDiagram(vals) +
+        '<div class="ringkas-analisis"><b>📊 Analisis:</b><ul><li>' + it.a.headline + '</li>' +
+          it.a.poin.map(function(t){ return '<li>' + t + '</li>'; }).join('') + '</ul></div>' +
+        '<div class="ringkas-kes"><b>💡 Interpretasi:</b> ' + it.a.kesimpulan + '</div>' +
+      '</div>';
+    });
+    return html;
+  }
+
+  function render(){
+    var bulan = $('selBulan').value || 'semua';
+    var resp = DATA.resp.filter(function(r){ return bulan === 'semua' || (r.created_at && keyBulan(r.created_at) === bulan); });
+    var rows = resp.map(function(r){ return r.jawaban || {}; });
+
+    $('partisipasiWrap').innerHTML = bangunPartisipasi(resp);
+    $('pertanyaanWrap').innerHTML = bangunKartuPertanyaan(rows);
+    var tren = bangunTren();
+    $('trenWrap').innerHTML = tren.chart;
+    $('trenInterp').innerHTML = tren.interp;
+    $('footInfo').textContent = 'Data survei: ' + labelBulan(bulan) + ' · Diperbarui ' +
+      new Date().toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    kirimTinggi();
+  }
+
+  function terapkanParam(){
+    var bagian = (PARAM.get('bagian') || 'partisipasi,tren,pertanyaan').split(',').map(function(s){ return s.trim(); });
+    $('secPartisipasi').classList.toggle('hidden', bagian.indexOf('partisipasi') === -1);
+    $('secTren').classList.toggle('hidden', bagian.indexOf('tren') === -1);
+    $('secPertanyaan').classList.toggle('hidden', bagian.indexOf('pertanyaan') === -1);
+    if (PARAM.get('pilih') === '0') $('toolbar').classList.add('hidden');
+    if (PARAM.get('judul') === '0') $('headTitle').classList.add('hidden');
+  }
+
+  async function mulai(){
+    terapkanParam();
+    var r1 = await ambilSemuaBaris('siswa', 'id, kelas, nama');
+    var r2 = await ambilSemuaBaris('survei_responses', 'siswa_id, nama, kelas, jawaban, created_at');
+    if (r1.error || r2.error){
+      $('partisipasiWrap').innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><p>Data belum dapat dimuat. Coba muat ulang halaman beberapa saat lagi.</p></div>';
+      kirimTinggi();
+      return;
+    }
+    DATA.siswa = r1.data || [];
+    DATA.resp = r2.data || [];
+
+    var keys = daftarBulan(DATA.resp);
+    var awal = PARAM.get('bulan');
+    if (!awal || keys.indexOf(awal) === -1) awal = 'semua';
+    $('selBulan').innerHTML = '<option value="semua">Semua Bulan</option>' + keys.map(function(k){
+      return '<option value="' + k + '">' + labelBulan(k) + '</option>';
+    }).join('');
+    $('selBulan').value = awal;
+    $('selBulan').addEventListener('change', render);
+    render();
+  }
+
+  window.addEventListener('resize', kirimTinggi);
+  mulai();
+</script>
+</body>
+</html>
