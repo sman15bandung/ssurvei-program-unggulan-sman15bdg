@@ -1963,6 +1963,7 @@
 
     /* ---- Import Hasil Survei dari Excel ---- */
     var importRowsParsed = []; // hasil parsing terakhir, menunggu konfirmasi import
+    var importHeaderInfo = { recognized: [], ignored: [] }; // untuk ditampilkan di pratinjau
 
     var TEMPLATE_HEADERS = ['Nama', 'Kelas'].concat(STAT_QUESTIONS.map(function(q){ return q.text; })).concat(['Tanggal Isi (YYYY-MM-DD, opsional)']);
 
@@ -1970,9 +1971,60 @@
       return String(str || '').trim().toLowerCase().replace(/\s+/g, ' ');
     }
 
-    // Peta dari teks header (dinormalisasi) -> qid, dibangun dari daftar pertanyaan yang sama dengan tab "Per Pertanyaan"
-    var HEADER_TO_QID = {};
-    STAT_QUESTIONS.forEach(function(q){ HEADER_TO_QID[normalisasiHeader(q.text)] = q.id; });
+    // Cek keberadaan kata utuh (bukan sekadar potongan huruf) di dalam teks -
+    // mencegah salah tangkap, misal "saham" ikut kecantol di dalam kata "usahamu".
+    function containsWord(norm, kw){
+      var re = new RegExp('\\b' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+      return re.test(norm);
+    }
+
+    // Aturan pencocokan header berbasis KATA KUNCI (bukan harus persis sama), supaya tetap terbaca
+    // walau kalimat pertanyaannya sedikit berbeda dari sumbernya (misal ekspor asli Google Form).
+    // Urutan penting: kata kunci yang lebih spesifik dicek lebih dulu.
+    var HEADER_MATCH_RULES = [
+      { qid: 'q_rakaat',     kw: ['rakaat'] },
+      { qid: 'q_ayat',       kw: ['ayat'] },
+      { qid: 'q_dhuha',      kw: ['dhuha'] },
+      { qid: 'q_renungan',   kw: ['renungan'] },
+      { qid: 'q_pembiasaan', kw: ['pembiasaan'] },
+      { qid: 'q_buku',       kw: ['buku'] },
+      { qid: 'q_rekening',   kw: ['rekening'] },
+      { qid: 'q_saham',      kw: ['saham'] },
+      { qid: 'q_digital',    kw: ['digital'] },
+      { qid: 'q_bidang',     kw: ['bidang', 'usaha'] },
+      { qid: 'q_usaha',      kw: ['usaha'] },
+      { qid: 'q_agama',      kw: ['agama'] }
+    ];
+
+    function cocokkanHeader(headerAsli){
+      var norm = normalisasiHeader(headerAsli);
+      if (norm === 'nama') return 'nama';
+      if (norm === 'kelas') return 'kelas';
+      if (norm.indexOf('tanggal') !== -1 || norm.indexOf('timestamp') !== -1) return 'tanggal';
+      for (var i = 0; i < HEADER_MATCH_RULES.length; i++){
+        var rule = HEADER_MATCH_RULES[i];
+        var cocok = rule.kw.every(function(k){ return containsWord(norm, k); });
+        if (cocok) return rule.qid;
+      }
+      return null;
+    }
+
+    // Rapikan variasi format nilai jawaban dari sumber lain (misal ekspor Google Form lama)
+    // supaya cocok dengan format yang dipakai wizard survei saat ini, dan tidak pecah jadi
+    // kategori ganda di grafik interpretasi.
+    function normalisasiNilaiJawaban(qid, val){
+      var v = String(val).trim();
+      v = v.replace(/\s*-\s*/g, '-'); // "0 - 5 Lot" -> "0-5 Lot"
+
+      if (qid === 'q_ayat'){
+        var m = v.match(/^(\d+)\s+SD\s+(\d+)\s+AYAT$/i);
+        if (m) return m[1] + ' s.d ' + m[2] + ' ayat';
+        var m2 = v.match(/^LEBIH DARI (\d+)\s*AYAT$/i);
+        if (m2) return 'Lebih dari ' + m2[1] + ' ayat';
+        if (v === '0') return '0';
+      }
+      return v;
+    }
 
     function unduhTemplateExcel(){
       var ws = XLSX.utils.aoa_to_sheet([
@@ -2002,16 +2054,11 @@
             return;
           }
 
-          // Petakan header apa adanya (case-insensitive) ke: nama, kelas, tanggal, dan tiap qid pertanyaan
+          // Petakan header apa adanya (case-insensitive, berbasis kata kunci) ke: nama, kelas, tanggal, atau qid pertanyaan
           var rawHeaders = Object.keys(rows[0]);
           var headerMap = {}; // header asli -> 'nama' | 'kelas' | 'tanggal' | qid | null
           rawHeaders.forEach(function(h){
-            var norm = normalisasiHeader(h);
-            if (norm === 'nama') headerMap[h] = 'nama';
-            else if (norm === 'kelas') headerMap[h] = 'kelas';
-            else if (norm.indexOf('tanggal') === 0) headerMap[h] = 'tanggal';
-            else if (HEADER_TO_QID[norm]) headerMap[h] = HEADER_TO_QID[norm];
-            else headerMap[h] = null; // kolom tak dikenali, diabaikan
+            headerMap[h] = cocokkanHeader(h);
           });
 
           var dikenaliKolom = Object.values(headerMap).filter(function(v){ return v && v !== 'tanggal'; }).length;
@@ -2019,6 +2066,15 @@
             previewWrap.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><p>Header kolom tidak dikenali. Gunakan template yang disediakan supaya nama kolom persis sama.</p></div>';
             return;
           }
+
+          var qidToText = {};
+          STAT_QUESTIONS.forEach(function(q){ qidToText[q.id] = q.text; });
+          importHeaderInfo.recognized = rawHeaders.filter(function(h){ return headerMap[h]; }).map(function(h){
+            var t = headerMap[h];
+            var label = t === 'nama' ? 'Nama' : t === 'kelas' ? 'Kelas' : t === 'tanggal' ? 'Tanggal' : qidToText[t];
+            return { header: h, label: label };
+          });
+          importHeaderInfo.ignored = rawHeaders.filter(function(h){ return !headerMap[h]; });
 
           importRowsParsed = rows.map(function(row){
             var nama = '', kelas = '', tanggal = '', jawaban = {};
@@ -2029,7 +2085,7 @@
               if (target === 'nama') nama = val;
               else if (target === 'kelas') kelas = val;
               else if (target === 'tanggal') tanggal = val;
-              else if (target) jawaban[target] = val;
+              else if (target) jawaban[target] = normalisasiNilaiJawaban(target, val);
             });
             var matchSiswa = siswaList.find(function(s){
               return s.nama.toLowerCase() === nama.toLowerCase() && s.kelas.toLowerCase() === kelas.toLowerCase();
@@ -2062,6 +2118,15 @@
         (tanpaSiswaId > 0 ? '<br><span class="import-badge-warn">⚠ ' + tanpaSiswaId + ' siswa tidak ditemukan di Daftar Siswa (tetap akan diimport, hanya tidak tertaut ke data siswa)</span>' : '') +
         '</div>';
 
+      var headerInfoHtml = '<div class="import-summary">' +
+        '<b>Kolom terdeteksi (' + importHeaderInfo.recognized.length + '):</b><br>' +
+        importHeaderInfo.recognized.map(function(x){ return '✓ "' + escapeHtml(x.header) + '" → ' + escapeHtml(x.label); }).join('<br>') +
+        (importHeaderInfo.ignored.length > 0 ?
+          '<br><br><span class="import-badge-warn">⚠ Kolom diabaikan (' + importHeaderInfo.ignored.length + '):</span><br>' +
+          importHeaderInfo.ignored.map(function(h){ return '– "' + escapeHtml(h) + '"'; }).join('<br>')
+          : '') +
+        '</div>';
+
       var rowsHtml = importRowsParsed.slice(0, 50).map(function(r){
         var jumlahJawaban = Object.keys(r.jawaban).length;
         return '<tr class="' + (r.valid ? '' : 'import-row-error') + '">' +
@@ -2077,7 +2142,7 @@
 
       var btnHtml = '<button class="btn" id="btnKonfirmasiImport"' + (validRows.length === 0 ? ' disabled' : '') + '>Import ' + validRows.length + ' Data Sekarang</button>';
 
-      previewWrap.innerHTML = summaryHtml + tableHtml + btnHtml;
+      previewWrap.innerHTML = summaryHtml + headerInfoHtml + tableHtml + btnHtml;
 
       document.getElementById('btnKonfirmasiImport').addEventListener('click', jalankanImport);
     }
